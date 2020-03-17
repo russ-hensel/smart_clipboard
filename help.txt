@@ -1,0 +1,420 @@
+
+add space to underscore
+
+
+
+
+See also: *>text   D:\Russ\0000\python00\python3\_projects\clipboard\Ver3\readme_rsh.txt
+    for a bit of technical info
+
+================ v3 help =========================
+
+Help file for clipboard application: better at beginning needs work farther down 
+
+This application enhances the operation of the system clipboard in a variety of ways.
+
+    * Automatically transform the contents of the clipboard.
+    * Loads the clipboard with commonly used fragments of text ( ).
+    * Take actions based on commands or implied commands in the copied text.
+        For example open some text files with a single click ( ).
+
+    In the help that follows we go over the system several times, each time giving more details.
+	
+    Outline 
+        Quick Guide to the User Interface, top to bottom
+        Details of transforms
+        Details of Commands
+        Details of snippets 
+        Details of snipfile 
+        How to Use the Parameter File
+
+     
+Quick Guide to the User Interface, top to bottom
+
+        System
+            Buttons to activate actions to work on administering the System supporting
+            or modifying the whole application.  Most options are somewhat technical or advanced.
+            For example, the <Ed Log> button opens the system log for viewing or editing.  More
+            details later in this guide.
+
+        Commands
+            Commands are clipboard contents that are used to issue a command to the
+            application.
+            An example:  if you copy the text
+                            *>url https://xkcd.com
+                         and then use the *cmd button, the system will open your
+                         browser to xkcd comic: Airplanes and Spaceships
+
+            Other contents and other buttons cause other actions.
+            Commands will not be executed if the copied text does not contain a 
+            valid command.
+
+        Transformations
+            Transformations cause the contents of the clipboard to be changed.
+            Easy to understand ( but not very useful ) are the <CAP> and <lower> buttons
+            which, respectively, change the contents of the clipboard to all Caps, upper case,
+            or all lower case.
+
+        User Feedback Area:
+            The application gives feedback to the user on the actions
+            that it has taken in the "feedback area".  Feedback depends
+            on the type of action the utility has taken.
+            Typically the first line of the feedback tells what action
+            has be taken, the balance shows the new contents of the clipboard.
+
+        Snippets
+            a snippets is a bit of text ( with a name, usually describing its purpose ) 
+            that when you click on its name in the snippets area the text is immediately copied 
+            into the clipboard.
+            
+        Snip Files
+            are text files that you want quick access to, possibly because you want to 
+            copy some text from them.  Click on the title for the file and it should open
+            in your text editor.
+
+    Overview of "Press" and "Always On"
+        When data is copied into the clipboard it may be processed either automatically "Always On"
+        ( controlled by radio and check buttons )
+        or "Press" mode where you must press ( click ) one of the push buttons.  Use which ever mode is convenient at any time.
+        The <Chain> button is special in that it lets you do multiple transformations, see more info below
+        Action of the snippets and snip files is always immediate.
+
+ 
+Details of transforms
+        Transforms normally just happen, unlike commands they are often not conditional on the contents.  
+        As such you can select only one.
+        If a command(s) is also checked, the the transform will only run if the command(s) "fail"
+        Transforms transform only the text data of the clipboard.
+
+        off               radio button: nothing happens to the clipboard at all.  push-button: 
+                          original text is restored. ( but non text formatting is lost: not restored. )
+        unformatted       clipboard will contain the text only contents of data that was clipped. 
+                          Formatting will be stripped.  Useful for coping from web pages to a word processor
+                          where you want to control the formatting.
+        CAP               all text is shifted to capitals
+        lower             all text is shifted to lower case
+        no WS             all white space ( spaces, tabs, line-feeds, carriage returns ) are remove
+        less WS           all contiguous white space ( spaces, tabs, line-feeds, carriage returns ) is changed to a single space
+        url to Wiki       pairs of lines with page tile and url are changed to the format used in many wikis 
+        add *>url         alternate lines have a *>url inserted ( typically when you copy from a 
+                          web browser where the odd lines are the names of the pages, and even line is the url )
+    
+        add *>shell       *>shell is added to the beginning of each line ( lines might be from a copy of file names from a file              browser )
+        comma sep         individual lines are combined with a comma separating them.  I have found this useful 
+                          for combining individual email addresses into one paste-able address.
+        undent            some indentation is removed, I need to look at the details
+        Alt line sort     pairs of lines are sorted by the ?first line
+                          on input blank lines are ignore as should be comment lines
+                          output includes a blank line,
+        test              for testing, may do nothing
+        
+        <Chain>         transforms may be chained together, so for example you can remove all white space, then change
+                        everyting to all CAPS.  Press the button for one transform, then <Chain>, then the second transform.
+                        Once you chain you cannot get back to the original text with the <off> or <unformatted> transform.
+
+Details of Commands
+    Commands cause the system to do something that is controlled by the contents of the clipboard.  If the content does not pass particular
+    tests the command may "fail" and nothing happens.  If all lines in the clipboard "fail" then the system ( in the auto mode ) moves on to
+    the next checked command.  If a command succeeds then the contents of the clipboard may be changed.  Typically if the first line of the copied
+    text does not imply a command then none are executed and the command "fails".  This makes it relatively easy to copy text with commands, just by copying a non command line as the first line.
+
+        text            lines which contain the name of a text file ( on the current computer ) are opened in the system text editor.
+                        The command fails if first line, or no lines have the name of a text file.
+
+        *cmd            lines in the text are examined for commands ( all of which start with a *> ) and if valid lines are found then the
+                        command is executed.  The command fails if first line does not have a valid command.
+    Details of *cmd
+
+            *>url   a_url                    the url is opened in the system,s web browser.
+            *>text  name_of_a_text_file      the file is opend in the system's text editor.
+            *>shell name of a "shell-able" item ( file name, or url ) This is pretty 
+                    much equivalent to double clicking on a file name
+            *>bat   beginning of a batch file ( windows ) which is run and the returned text captured in the clipboard.
+            *>dir   --- do we have this??
+
+        Details of *>bat
+            if it starts with *>bat then *>bat is all we will do, later commands in the same clipped text are ignored
+
+            *>bat needs a *>end line and dos batch commands between them
+                an example:
+
+                *>bat
+                    dir d:\russ\*.*
+                    rem what
+                *>end
+
+                *>bat captures dos return text as the new clipboard contents.
+
+        Details of *>text
+            Uses the systems text editor as configured in parameters.py
+            for example:
+            # system text editor:
+            self.ex_editor          =  r"C:\apps\Notepad++\notepad++.exe"
+            for a file to be edited ( or even attempted ) it must exist and have
+            an extension as configured in parameters.py
+            for example:
+            # files for text editing ( extensions:
+            self.text_extends = [  ".txt",  ".rsh", ".ino", ".py", ".h" , ".cpp", ".py_log", ".log", ]  # include the dot!
+
+Details of snippets
+        snippets are configured in 2 files, partly in the parameters.py where a line like:
+        self.snip_file_fn       = "snip_files_1.txt"
+        which names the file where the snippets are actually set.  This make it easy to change from one
+        group of snippets to another.
+        In the snip_file lines like:
+
+        >>>>>python print flush
+        import sys
+        print( "Hi Uni" )
+        sys.stdout.flush()
+
+        define a snippet.  In the example, "python print flush" is the name of the snippet and
+        the lines that file are the text of the snippet.  The end of file should be marked with the line:
+        >>>>>end
+
+        A button on the gui opens the current snippet file in the system editor.
+
+Details of snipfile
+
+
+========== How to Use the Parameter File ============
+
+
+
+
+
+
+=============== Test stuff to try copying =======================
+
+------------ *cmd example text ----------------
+    noise line
+
+    *>url          http://www.instructables.com/id/Bandsaw-Stand-From-Scrap-Lumber/
+     skip line
+    *>url              http://web.mit.edu/w1gsl/Public/ne-fleas
+
+
+        *>text    D:\Russ\0000\python00\python3\_projects\clipboard\Ver3\test_controller.py
+
+     *>shell  D:\apps\PuTTY\putty.exe
+
+History
+    ?? multiple transformations
+    ** exe file seems not a good idea, remove
+
+========== old help stuff recycle and delete ==================
+
+
+----------------------------- *>url
+
+first line must contain something processable ( files must exist, url's must look a bit like url's )
+
+not being processable lets you copy text with commands by having a blank line or perhaps a fraction of a command
+
+
+-- want an option to do only one type of command and then stop ??
+----------------------------- *>shell
+
+    take line contents after *>shell and more or less double click it
+
+
+    *>shell
+
+----------------------------  *>text
+
+edit file with parameter specified editor
+
+        ?? check for legal extension
+        ?? check for file exists
+
+       *>text    D:\Russ\0000\python00\python3\_projects\clipboard\Ver3\test_controller.py
+
+--------------- new transformation  add *>shell to beginning of each line ------------
+--------------- remove white space and line feeds ?? already true  yes ------------
+--------------- reduse white space and line feeds leave 1 in a series  ------------
+
+This is test line 1
+this is test line two
+this IS TEST LINE 3
+kcrw 89.9fm | music, npr news, culture los angeles
+KCRW 89.9FM | MUSIC, NPR NEWS, CULTURE LOS ANGELES
+KCRW 89.9FM | Music, NPR News, Culture Los Angeles
+
+ideas --- for command based do nothing if first line blank  this lets you copy
+            for transform ....
+            process one line at a time for all commands except for ones that are inherently multiline
+
+
+= General =
+
+When "turned off" no check boxes and radio button set to off your clipboard should function
+as normal.  The GUI ("feedback area")will still show the last item clipped headed by something like
+    =============== did nothing ==>
+    blah blah....
+
+If some of the operations are turned on the utility searches through them until one
+works and then the utility returns.  Multiple operations may be turned on but only the first
+successfully executed will be run.
+
+If no operation "works" then the system will apply the indicated transformation if any.
+
+
+= System commands mostly Big Buttons =
+
+Redo               >Fetches the last text ( unformatted ) and reapplies any indicated commands or transformations.
+                    Note that all the commands have there own redo button which does not require checking off the command
+Undo Text          >If the last item has been transformed it will undo the transformation to unformatted text
+Edit Log           >Open the application python log file using the system editor specified in parameters.py
+Edit Parms         >Open the application parameters.py file using the system editor, after the file has been modified
+                    the system can be quickly restarted using the Restart button.
+<Ed Snippets>      >Open the application snippets file using the system editor, after the file has been modified
+                    the system can be quickly restarted using the Restart button.
+
+<Ed Snip Files>    >Open the application snippets file using the system editor, after the file has been modified
+                    the system can be quickly restarted using the Restart button.
+<Restart>          >Quickly restarts the system after the parameters.py file or the snippets file ( as specified int parameters.py ) has been edited.
+
+
+= Auto Commands, Check Buttons =
+Check buttons are a combination of a button and a check box.  Checking the box indicates the associated operation should be tried
+on the next clipboard clip, pressing the button tries the operation on the last item clipped.
+
+The operations are:
+
+this does not include the internal pb ones.
+
+                    which are implemented ??
+<*cmd>              scan lines for commands that start with *> these include
+
+
+                        *>shell   <filename  or url>              open terminal and shell out the file  -- stuff after filename ??
+                        *>url     <a_url>                  go to a url   -- allow multiples?  *>urls ??
+                        *>text    open file in parameter set text editor -- instead of just shell if file has wrong extension  checks file type and existance
+                                  *>shell    ....notepad++.exe file_name  would it do the same
+                        ------------------ still need testing -------------------------------
+
+                        *>bat     run a batch command  followed by multiple lines for a bat file, should end .... with *>end
+
+                        *>py      python_file_name        run a python file
+                        new *>py2, py3, do we need environment or just right launch
+                        *>sql                             run some sql, must be proceeded by a connect  -- this has not been implemented, but only in pb
+
+                        xxxx*>exe     run an exe or does shell do this fine  think shell
+
+
+                        ---------------------------
+
+                        *>bat      may only be safe if they return data to the popopen shell like dir perhaps multiple dirs
+                                   at end I used to use notepad -- not sure of the utility of this
+                                   multiple dirs ok and can do sets and revover paths
+                                   since all stuff in windows cmd perhaps sheoudl be *cmd>
+                                   may want instesd/additionaly
+
+                        *>dir     bring data back to clipboard -- can we do multiple lines -- no??
+
+
+
+
+<auto url>          if a url is present go to that url ( how much trash can be around the url ??)
+
+
+<text file>
+<exe file>
+
+
+sort ... look for more
+
+
+= Snippets =
+
+A snippet is a string that can be copied into the clipboard by clicking ( just once ) on its name
+it is then shown in the clip board area
+
+=============== snippet ==>
+
+shown in the heading.  It is not used as a command or transformed ( but can be redone )
+
+
+
+
+
+
+= Technical =
+
+
+
+========================  Test stuff to copy  =====================
+== Url's ==
+Run a .bat file using python code - Stack Overflow
+https://stackoverflow.com/questions/5469301/run-a-bat-file-using-python-code
+
+python - Executing a subprocess fails - Stack Overflow
+https://stackoverflow.com/questions/1818774/executing-a-subprocess-fails
+
+How to capture stdout output from a Python function call? - Stack Overflow
+https://stackoverflow.com/questions/16571150/how-to-capture-stdout-output-from-a-python-function-call
+
+How can I redirect print output of a function in python - Stack Overflow
+https://stackoverflow.com/questions/14197009/how-can-i-redirect-print-output-of-a-function-in-python
+
+        C:\MediaId.txt
+        D:\Russ\0000\SpyderP\rshlib\other.txt
+        South Coast Innovator Labs
+        http://scilspace.org/
+
+        Recent Instructables
+        http://www.instructables.com/tag/type-id/?sort=RECENT
+
+not a file name
+D:\Russ\0000\python00\python3\_projects\run_sql\app_global.py
+D:\Russ\0000\python00\python3\_projects\run_sql\db.py
+D:\Russ\0000\python00\python3\_projects\run_sql\parameters.py
+
+
+========================== star commands =================================
+    *>url       https://forum.allaboutcircuits.com
+
+    --- for shell or url  if the object does not exist then operation unclear   file must exist, else runs with no error -- may fix later
+
+
+    *>shell     D:\Russ\0000\python00\python3\_projects\clipboard\Ver2\readme_rsh.txt
+
+    *>shell     https://forum.allaboutcircuits.com
+    ---- now working on this then *>bat  text files configed in parameters.py
+
+
+    ----- text works at least on one line but returns a did nothing this needs fixing
+    *>text    D:\Russ\0000\python00\python3\_projects\clipboard\Ver2\readme_rsh.txt
+    *>text    D:\Russ\0000\python00\python3\_projects\clipboard\Ver2\gui.py
+
+
+============================ end tests ======================================================
+
+
+            How about the logic
+
+            Only one thing happens:  the first command or transform ends the processing.  When using the
+            individual command buttons you can execute an unchecked command on the last copied text.
+
+            Load Clipboard
+
+            Transforms
+                   Transforms may be conditional.  For example the transformation of url's to wiki format will not
+                   occur if the text does not look like it meets the criteria for a list of url's.
+                   Shifting case on the other hand is unconditional
+
+            Commands
+                Implied
+                    scan the text for special stuff ( perhaps after text clean up )
+                   and execute a command base on the special stuff.  The special stuff might be a url
+                   or a file name. commands  t do not stop after the first occurance of the magic text
+                   so several actions may take place.
+
+
+
+
+
+
+
+
+

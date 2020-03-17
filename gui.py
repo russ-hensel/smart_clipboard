@@ -25,61 +25,6 @@ def  make_check_button( p_frame,  a_text, a_variable, a_function     ):
 
         return a_frame
 
-# might make a class which could auto increment, store variables.... maybe??
-def make_and_place_transform_buttons_1 ( a_frame,           text = "no text",      ix_row   = 5, ix_col = 5,
-                                       button_var = None, button_command = None, rb_index = 1 ):   # make both buttons
-
-
-        """
-        this makes it easy to mess with styles for this part of the gui
-        """
-#        print( f"for {text} index is { ix_col }, {ix_row}" )
-        rbx   =  Tk.Radiobutton( a_frame, text= text,   variable = button_var, value = rb_index )
-        rbx.grid( row = ix_row,  column = ix_col, )   # sticky = rb_sticky )
-
-        a_button = Tk.Button( a_frame , width=10, height=2, text = text )
-        a_button.config( command = button_command  )
-        # placement.place( a_button )
-        a_button.grid( row = ix_row - 1, column = ix_col )
-        return rbx
-# ---------------------------
-def make_and_place_transform_buttons ( a_frame,           text = "no text",      ix_row   = 5, ix_col = 5,
-                                       button_var = None, button_command = None, rb_index = 1 ):   # make both buttons
-
-
-        """
-        rb below, centered no text
-        """
-#        print( f"for {text} index is { ix_col }, {ix_row}" )
-        rbx   =  Tk.Radiobutton( a_frame, text= "",   variable = button_var, value = rb_index )
-        rbx.grid( row = ix_row,  column = ix_col, )   # sticky = rb_sticky )
-
-        a_button = Tk.Button( a_frame , width=10, height=2, text = text )
-        a_button.config( command = button_command  )
-        # placement.place( a_button )
-        a_button.grid( row = ix_row - 1, column = ix_col )
-        return rbx
-
-#def  make_rp_button( pr_frame, pb_frame,  a_text, a_variable, a_function     ):
-#        """
-#        two frame one for radio buttons other for push
-#        parent_frame   text   a_varible_for_what
-#        make a combination check box and button
-#        """
-#        a_frame = Tk.Frame( p_frame, bd = 2, relief = Tk.SUNKEN, height=2 )
-#
-##        a_cb = Tk.Checkbutton( b_frame, text="",          variable = a_variable,    ) # value=0 )
-##        a_cb.grid( row=0,  column=0 )
-#
-#        a_rb   =  Tk.Radiobutton( a_frame, text="off", variable = self.button_var, value = ix_col )
-#        a_rb.grid( row=0,  column=0 )
-#
-#        a_button = Tk.Button( b_frame , width=10, height=1, text = a_text  )
-#        a_button.config( command = a_function  )
-#        a_button.grid( row=0, column= 1 )
-#
-#        return a_frame
-
 
 # ===================== class
 class GUI( object ):
@@ -124,7 +69,6 @@ class GUI( object ):
 
         self.cb_edit_txt_var   = Tk.IntVar()
 
-        #self.root.title( self.controller.parameters.title )   f"Application: {self.app_name} {AppGlobal.parameters.mode}  {self.app_version}"
         self.root.title( f"{self.controller.app_name} mode: {AppGlobal.parameters.mode} " +
                          f" version: {self.controller.version}" )
 
@@ -308,36 +252,6 @@ class GUI( object ):
 
         return main_frame
 
-
-#======================
-#
-#
-#        a_frame = Tk.Frame( p_frame, bd = 2, relief = Tk.SUNKEN, height=2 )
-#
-#        a_cb = Tk.Checkbutton( a_frame, text="",          variable = a_variable,    ) # value=0 )
-#        a_cb.grid( row=1,  column=0 )
-#
-#        a_button = Tk.Button( a_frame , width=10, height=2, text = a_text )
-#        a_button.config( command = a_function  )
-#        a_button.grid( row = 0, column = 0 )
-#
-#
-#
-#
-#
-#
-#  ===================
-
-#        a_label = Tk.Label( a_frame, text = "Auto Commands: ",  ) #   relief = RAISED,  )
-#        placement.place( a_label )
-
-        # a_cb = Tk.Checkbutton( a_frame, text="mulp",          variable = self.cb_mulp_cmd_var,    ) # value=0 )
-        # !! not sure what this was for, multiple commands vs single commands, want to make all mulp all the time ??
-#        a_cb = make_check_button( a_frame, "mulp", self.cb_mulp_cmd_var, None     )
-#        placement.place( a_cb )
-
-
-
     # ------------------------------------------
     def _make_transform_frame_( self, parent_frame,  ):
         """
@@ -382,150 +296,151 @@ class GUI( object ):
         b_label = Tk.Label( a_frame, text = pb_title,  ) #   relief = RAISED,  )
         b_label.grid( row = ix_row -1, column= ix_col )
 
-        # -----------------
+        # ----------- redo_off
         ix_rb_index         += 1
         ix_col              += 1
         self.trans_off_rb   = ix_col
         txt                 = "off"
 
-        rb0 = make_and_place_transform_buttons ( a_frame,    text = "off",              ix_row = ix_row, ix_col = ix_col,
+        # special case because does not call cmd_processor, perhaps should change this
+        rb0 = self.make_and_place_transform_buttons_x ( a_frame,    text = "off",
+                                        ix_row = ix_row, ix_col = ix_col,
                                            button_var       = self.button_var,
                                            button_command   = self.controller.redo_off,
                                            rb_index         = ix_rb_index )
 
         rb0.select() # default this button
 
-        # -----------------
+        # -------- redo_unformatted
 
         ix_rb_index        += 1
         ix_col             += 1
         self.uformat_rb    = ix_col
 
-        make_and_place_transform_buttons ( a_frame,    text = "unformmated",              ix_row = ix_row, ix_col = ix_col,
+        # special case because does not call cmd_processor, perhaps should change this
+        self.make_and_place_transform_buttons_x ( a_frame,    text = "unformmated",
+                                   ix_row = ix_row, ix_col = ix_col,
                                    button_var       = self.button_var,
                                    button_command   = self.controller.redo_unformatted,
                                    rb_index         = ix_rb_index )
 
-        # -----------------
+        # -------- transform_cap,
         ix_rb_index  += 1
         ix_col       += 1
         self.cap_rb   = ix_col
 
-        make_and_place_transform_buttons ( a_frame,    text = "CAP",              ix_row = ix_row, ix_col = ix_col,
+        self.make_and_place_transform_buttons_3 ( a_frame,    text = "CAP",
+                                           ix_row = ix_row, ix_col = ix_col,
                                            button_var       = self.button_var,
-                                           button_command   = self.controller.redo_cap,
+                                           button_command   = AppGlobal.cmd_processor.transform_cap,
                                            rb_index         = ix_rb_index )
-        self.controller.dispatch_dict[ix_rb_index]          = self.controller.cmd_processor.transform_cap
 
-        # -----------------
+        # -------- transform_lower,
         ix_rb_index  += 1
         ix_col       += 1
         self.lower_rb   = ix_col
 
-        make_and_place_transform_buttons ( a_frame,    text = "lower",              ix_row = ix_row, ix_col = ix_col,
+        self.make_and_place_transform_buttons_3 ( a_frame,  text = "lower",
+                                   ix_row                   = ix_row, ix_col = ix_col,
                                    button_var               = self.button_var,
-                                   button_command           = self.controller.redo_lower,
+                                   button_command           = AppGlobal.cmd_processor.transform_lower,   # self.controller.redo_lower,
                                    rb_index                 = ix_rb_index )
-        self.controller.dispatch_dict[ix_rb_index]          = self.controller.cmd_processor.transform_lower
 
-        # -----------------
+        # -------- transform_no_ws,
         ix_rb_index      += 1
         ix_col           += 1
         self.no_ws_rb    = ix_col
 
-        make_and_place_transform_buttons ( a_frame,    text = "No WS",              ix_row = ix_row, ix_col = ix_col,
+        self.make_and_place_transform_buttons_3 ( a_frame,    text = "No WS",
+                                  ix_row = ix_row, ix_col = ix_col,
                                    button_var               = self.button_var,
-                                   button_command           = self.controller.redo_no_ws,
+                                   button_command           = AppGlobal.cmd_processor.transform_no_ws,
                                    rb_index                 = ix_rb_index )
-        self.controller.dispatch_dict[ix_rb_index]          = self.controller.cmd_processor.transform_no_ws
 
-        # -----------------
+        # -------- transform_less_ws
         ix_rb_index  += 1
         ix_col       += 1
         self.less_ws_rb    = ix_col
 
-        make_and_place_transform_buttons ( a_frame,    text = "Less WS",              ix_row = ix_row, ix_col = ix_col,
+        self.make_and_place_transform_buttons_3 ( a_frame,    text = "Less WS",              ix_row = ix_row, ix_col = ix_col,
                                    button_var               = self.button_var,
-                                   button_command           = self.controller.redo_less_ws,
+                                   button_command           = AppGlobal.cmd_processor.transform_less_ws,
                                    rb_index                 = ix_rb_index )
-        self.controller.dispatch_dict[ix_rb_index]          = self.controller.cmd_processor.transform_less_ws
 
-        # -----------------
+
+        # -------- transform_insert_spaces
         ix_rb_index  += 1
         ix_col       += 1
         self.indent_line_rb   = ix_col
 
-        make_and_place_transform_buttons ( a_frame,    text = "Indent",              ix_row = ix_row, ix_col = ix_col,
+        self.make_and_place_transform_buttons_3 ( a_frame,    text = "Indent",              ix_row = ix_row, ix_col = ix_col,
                                    button_var               = self.button_var,
-                                   button_command           = self.controller.redo_insert_spaces,
+                                   button_command           = AppGlobal.cmd_processor.transform_insert_spaces,
                                    rb_index                 = ix_rb_index )
-        self.controller.dispatch_dict[ix_rb_index]          = self.controller.cmd_processor.transform_insert_spaces
 
-        # -----------------
+        # -------- transform_star_line
         ix_rb_index  += 1
         ix_col       += 1
         self.star_line_rb   = ix_col   # adjust for new button -- think this really should be radio button index or fails on second line
 
-        make_and_place_transform_buttons ( a_frame,    text = "* Lines",              ix_row = ix_row, ix_col = ix_col,  # adjust for new button
+        self.make_and_place_transform_buttons_3 ( a_frame,    text = "* Lines",              ix_row = ix_row, ix_col = ix_col,  # adjust for new button
                                    button_var       = self.button_var,
-                                   button_command   = self.controller.redo_star_line,   # adjust for new button
+                                   button_command   = AppGlobal.cmd_processor.transform_star_line,
                                    rb_index         = ix_rb_index )
-        self.controller.dispatch_dict[ix_rb_index]  = self.controller.cmd_processor.transform_star_line
 
-        # -----------------
-        ix_rb_index  += 1
-        ix_col       += 1
-        self.url_to_wiki_rb   = ix_col
-
-        make_and_place_transform_buttons ( a_frame,    text = "URL to\n Wiki",              ix_row = ix_row, ix_col = ix_col,
-                                   button_var       = self.button_var,
-                                   button_command   = self.controller.redo_url_to_wiki,
-                                   rb_index         = ix_rb_index )
-        self.controller.dispatch_dict[ix_rb_index]  = self.controller.cmd_processor.transform_url_wiki
-
-         # -----------------
+        # -------- Add *>url
         ix_rb_index  += 1
         ix_col       += 1
         self.url_to_helpdb_rb   = ix_col
 
-        make_and_place_transform_buttons ( a_frame,    text = "Add\n *>url",              ix_row = ix_row, ix_col = ix_col,
+        self.make_and_place_transform_buttons_3 ( a_frame,    text = "Add\n *>url",
+                                   ix_row           = ix_row, ix_col = ix_col,
                                    button_var       = self.button_var,
-                                   button_command   = self.controller.redo_url_to_helpdb,
-                                   rb_index         = ix_rb_index )
-        self.controller.dispatch_dict[ix_rb_index]  = self.controller.cmd_processor.transform_url_to_helpdb
+                                   button_command   = AppGlobal.cmd_processor.transform_url_to_helpdb,
 
-        # -----------------
+                                   rb_index         = ix_rb_index )
+
+        # ---------  star_shell  -----------------
         ix_rb_index         += 1
         ix_col              += 1
         self.add_shell_rb    = ix_col
 
-        make_and_place_transform_buttons ( a_frame,    text = "Add\n *>shell",              ix_row = ix_row, ix_col = ix_col,
+        self.make_and_place_transform_buttons_3 ( a_frame,    text = "Add\n *>shell",
+                                   ix_row           = ix_row, ix_col = ix_col,
                                    button_var       = self.button_var,
-                                   button_command   = self.controller.redo_star_shell,
+                                   button_command   = AppGlobal.cmd_processor.transform_star_shell,
                                    rb_index         = ix_rb_index )
-        self.controller.dispatch_dict[ix_rb_index]  = self.controller.cmd_processor.transform_star_line
 
-        # -----------------
+        # ---------  comm sep  -----------------
         ix_rb_index         += 1
         ix_col              += 1
         self.comma_sep_rb   = ix_col
 
-        make_and_place_transform_buttons ( a_frame,    text = "comma,\n sep",              ix_row = ix_row, ix_col = ix_col,
+        self.make_and_place_transform_buttons_3 ( a_frame,    text = "comma,\n sep",              ix_row = ix_row, ix_col = ix_col,
                                    button_var       = self.button_var,
-                                   button_command   = self.controller.redo_comma_sep,
+                                   button_command   = AppGlobal.cmd_processor.transform_comma_sep,
                                    rb_index         = ix_rb_index )
-        self.controller.dispatch_dict[ix_rb_index]  = self.controller.cmd_processor.transform_comma_sep
 
-        # -----------------
+        # ---------  delete_dup  -----------------
+        ix_rb_index         += 1
+        ix_col              += 1
+        self.comma_sep_rb   = ix_col
+
+        self.make_and_place_transform_buttons_3 ( a_frame,      text = "delete,\n dup",
+                                   ix_row           = ix_row,   ix_col = ix_col,
+                                   button_var       = self.button_var,
+                                   button_command   = AppGlobal.cmd_processor.transform_delete_dup,
+                                   rb_index         = ix_rb_index )
+
+        # ---------  un_dent  -----------------
         ix_rb_index  += 1
         ix_col       += 1
         self.undent_rb      = ix_rb_index
 
-        make_and_place_transform_buttons ( a_frame,    text = "undent",              ix_row = ix_row, ix_col = ix_col,
+        self.make_and_place_transform_buttons_3 ( a_frame,    text = "undent",              ix_row = ix_row, ix_col = ix_col,
                                    button_var       = self.button_var,
-                                   button_command   = self.controller.redo_undent,
+                                   button_command   = AppGlobal.cmd_processor.transform_un_dent,
                                    rb_index         = ix_rb_index )
-        self.controller.dispatch_dict[ix_rb_index]  = self.controller.cmd_processor.transform_un_dent
 
         # ---------   a new frame here -----------------------
         a_frame     = sub_frame_1
@@ -539,63 +454,145 @@ class GUI( object ):
         b_label = Tk.Label( a_frame, text = pb_title,  ) #   relief = RAISED,  )
         b_label.grid( row = ix_row - 1, column= ix_col )
 
-        #--------
+
+        # -------- transform_del_dups
         ix_rb_index               += 1
         ix_col                    += 1
         self.alt_line_sort_rb      = ix_rb_index
 
-        make_and_place_transform_buttons ( a_frame,    text = "Alt Line \nSort 0",              ix_row = ix_row, ix_col = ix_col,
+        self.make_and_place_transform_buttons_3 (   a_frame,    text = "Delete\nDups",
+                                                    ix_row = ix_row, ix_col = ix_col,
                                    button_var       = self.button_var,
-                                   button_command   = self.controller.redo_alt_line_sort,
+                                   button_command   = AppGlobal.cmd_processor.transform_del_dups,
                                    rb_index         = ix_rb_index )
-        self.controller.dispatch_dict[ix_rb_index]  = self.controller.cmd_processor.transform_alt_line_sort
+        #self.controller.dispatch_dict[ix_rb_index]  = self.controller.cmd_processor.transform_line_sort
 
-        #--------
+        # -------- transform_no_blank_lines
+        ix_rb_index               += 1
+        ix_col                    += 1
+        self.alt_line_sort_rb      = ix_rb_index
+
+        self.make_and_place_transform_buttons_3 (   a_frame,    text = "No Blank\nLines",
+                                                    ix_row = ix_row, ix_col = ix_col,
+                                   button_var       = self.button_var,
+                                   button_command   = AppGlobal.cmd_processor.transform_no_blank_lines,
+                                   rb_index         = ix_rb_index )
+
+        # -------- Line Sort -- single lines
+        ix_rb_index               += 1
+        ix_col                    += 1
+        self.alt_line_sort_rb      = ix_rb_index
+
+        self.make_and_place_transform_buttons_3 ( a_frame,    text = "Line \nSort",
+                                                    ix_row = ix_row, ix_col = ix_col,
+                                   button_var       = self.button_var,
+                                   button_command   = AppGlobal.cmd_processor.transform_line_sort,
+                                   rb_index         = ix_rb_index )
+
+        #self.controller.dispatch_dict[ix_rb_index]  = self.controller.cmd_processor.transform_line_sort
+
+        # -------- Alt Line Sort
+        ix_rb_index               += 1
+        ix_col                    += 1
+        self.alt_line_sort_rb      = ix_rb_index
+
+        self.make_and_place_transform_buttons_3 ( a_frame,    text = "Alt Line \nSort 0",              ix_row = ix_row, ix_col = ix_col,
+                                   button_var       = self.button_var,
+                                   button_command   = AppGlobal.cmd_processor.transform_alt_line_sort,
+                                   rb_index         = ix_rb_index )
+        #self.controller.dispatch_dict[ix_rb_index]  = self.controller.cmd_processor.transform_alt_line_sort
+
+        # -------- sage
         ix_rb_index              += 1
         ix_col                   += 1
         self.sage_rb      = ix_rb_index
 
-        make_and_place_transform_buttons ( a_frame,    text = "Sage",              ix_row = ix_row, ix_col = ix_col,
+        self.make_and_place_transform_buttons_3 ( a_frame,    text = "Sage",              ix_row = ix_row, ix_col = ix_col,
                                    button_var       = self.button_var,
-                                   button_command   = self.controller.redo_transform_sage,
+                                   button_command   = AppGlobal.cmd_processor.transform_sage,
                                    rb_index         = ix_rb_index )
-        self.controller.dispatch_dict[ix_rb_index]  = self.controller.cmd_processor.transform_sage
+        #self.controller.dispatch_dict[ix_rb_index]  = self.controller.cmd_processor.transform_sage
 
-       #--------
-        ix_rb_index        += 1
-        ix_col             += 1
-        self.x_file_up_rb        = ix_rb_index
-        # self.dispatch_dict[ self.rb_test ]   = self.controller.cmd_processor.transform_test  # controller not yet defined
+        # -------- transform_number_lines( self, in_text,  ):
+        ix_rb_index              += 1
+        ix_col                   += 1
+        self.sage_rb      = ix_rb_index
 
-        make_and_place_transform_buttons ( a_frame,    text = "wiki\nfile_upload",              ix_row = ix_row, ix_col = ix_col,
+        self.make_and_place_transform_buttons_3 ( a_frame,    text = "Line Num",
+                                   ix_row           = ix_row,
+                                   ix_col           = ix_col,
                                    button_var       = self.button_var,
-                                   button_command   = self.controller.redo_x_file_up,
+                                   button_command   = AppGlobal.cmd_processor.transform_number_lines,
                                    rb_index         = ix_rb_index )
-        self.controller.dispatch_dict[ix_rb_index]  = self.controller.cmd_processor.transform_upload_log
 
-        #--------
+        # -------- no_trailing_space( self, in_text,  ):
+        ix_rb_index              += 1
+        ix_col                   += 1
+        self.sage_rb      = ix_rb_index
+
+        self.make_and_place_transform_buttons_3 ( a_frame,    text = "No Trail\nSpace",
+                                   ix_row           = ix_row,
+                                   ix_col           = ix_col,
+                                   button_var       = self.button_var,
+                                   button_command   = AppGlobal.cmd_processor.transform_no_trailing_space,
+                                   rb_index         = ix_rb_index )
+
+        # -------- tab_to_space
+        ix_rb_index              += 1
+        ix_col                   += 1
+        self.sage_rb      = ix_rb_index
+
+        self.make_and_place_transform_buttons_3 ( a_frame,    text = "Tab > \nSpace",
+                                   ix_row           = ix_row,
+                                   ix_col           = ix_col,
+                                   button_var       = self.button_var,
+                                   button_command   = AppGlobal.cmd_processor.transform_tab_to_space,
+                                   rb_index         = ix_rb_index )
+        #self.controller.dispatch_dict[ix_rb_index]  = self.controller.cmd_processor.transform_tab_to_space
+
+        # -------------------- if wiki
+        if AppGlobal.parameters.include_wiki_buttons:
+
+            # ----------------- url to wiki
+            ix_rb_index  += 1
+            ix_col       += 1
+            self.url_to_wiki_rb   = ix_col
+
+            self.make_and_place_transform_buttons_3 ( a_frame,    text = "URL to\n Wiki",              ix_row = ix_row, ix_col = ix_col,
+                                       button_var       = self.button_var,
+                                       button_command   = AppGlobal.cmd_processor.transform_url_wiki,
+                                       rb_index         = ix_rb_index )
+
+            # -------- upload_log - for wikis
+            ix_rb_index        += 1
+            ix_col             += 1
+            self.x_file_up_rb        = ix_rb_index
+
+
+            self.make_and_place_transform_buttons_3 ( a_frame,    text = "wiki\nfile_upload",              ix_row = ix_row, ix_col = ix_col,
+                                       button_var       = self.button_var,
+                                       button_command   = AppGlobal.cmd_processor.transform_upload_log,
+                                       rb_index         = ix_rb_index )
+
+        #-------- test -----
         ix_rb_index        += 1
         ix_col             += 1
         self.test_rb        = ix_rb_index
-        # self.dispatch_dict[ self.rb_test ]   = self.controller.cmd_processor.transform_test  # controller not yet defined
 
-        make_and_place_transform_buttons ( a_frame,    text = "test",              ix_row = ix_row, ix_col = ix_col,
+        self.make_and_place_transform_buttons_3 ( a_frame,    text = "test",              ix_row = ix_row, ix_col = ix_col,
                                    button_var       = self.button_var,
-                                   button_command   = self.controller.redo_test,
+                                   button_command   = AppGlobal.cmd_processor.transform_test,
                                    rb_index         = ix_rb_index )
-        self.controller.dispatch_dict[ix_rb_index]  = self.controller.cmd_processor.transform_test
 
-
-        #--------
+        #-------- user_jpages ------
         ix_rb_index              += 1
         ix_col                   += 1
         self.sage_rb      = ix_rb_index
 
-        make_and_place_transform_buttons ( a_frame,    text = "UserPage",              ix_row = ix_row, ix_col = ix_col,
+        self.make_and_place_transform_buttons_3 ( a_frame,    text = "UserPage",              ix_row = ix_row, ix_col = ix_col,
                                    button_var       = self.button_var,
-                                   button_command   = self.controller.redo_transform_user,
+                                   button_command   = AppGlobal.cmd_processor.transform_user_pages,
                                    rb_index         = ix_rb_index )
-        self.controller.dispatch_dict[ix_rb_index]  = self.controller.cmd_processor.transform_user_pages
 
         #-------- chain --- this is different
         ix_col       += 1
@@ -649,13 +646,18 @@ class GUI( object ):
         ?? and add make snipets
         returns this frame, parent should paste
         """
-        a_frame    = Tk.Frame( parent_frame )
+        a_frame          = Tk.Frame( parent_frame )
+
+        # --------- snippets
+        snippets_temp    = AppGlobal.controller.snippets
+
         ( a_tlistbox, a_listbox ) = self._make_titled_listbox_( a_frame, "Snippets" )
         #self.parameters.snippets
-        for i_snip in self.parameters.snippets:
+        for i_snip in snippets_temp:
+
             i_id, i_text  = i_snip
             #rint i_snip
-            self.controller.snippets.update( dict( [ i_snip ] ) )
+            self.controller.snippets_dict.update( dict( [ i_snip ] ) )  # i_snip a tuple in a list -- this reaches into controller
             a_listbox.insert( 'end', i_id )
 
         #            for i in range(1, 101):
@@ -665,14 +667,15 @@ class GUI( object ):
         a_listbox.bind( "<<ListboxSelect>>", self.controller.snippet_select )
         a_tlistbox.grid( column=0, row=0, sticky=( Tk.N, Tk.S, Tk.E, Tk.W) )
 
-        # -------------------------------
+        # ----------------- snips = snipfiles --------------
         ( a_tlistbox, a_listbox ) = self._make_titled_listbox_( a_frame, "SnipFiles" )
         a_tlistbox.grid( column=1, row=0, sticky=( Tk.N, Tk.S, Tk.E, Tk.W) )
 
-        for i_snip in self.parameters.snip_files:
+        snip_files_temp   = AppGlobal.controller.snip_files
+        for i_snip in  snip_files_temp:
             i_id, i_text  = i_snip
             #rint i_snip
-            self.controller.snip_files.update( dict( [ i_snip ] ) )
+            self.controller.snip_files_dict.update( dict( [ i_snip ] ) )
             a_listbox.insert( 'end', i_id )
 
         # still need to bind
@@ -686,11 +689,12 @@ class GUI( object ):
         return a_frame
 
     # ==================== end construction ====================
-    # construction helpers
+    # next construction helpers
 
     def _make_titled_listbox_( self, parent_frame, a_title ):
         """
-        return ( famelike_thing, listbox_thing)  ?? make a class, better acces to components
+        for snips and snippets?
+        return ( famelike_thing, listbox_thing)  ?? make a class, better access to components
         """
         a_frame      = Tk.Frame(parent_frame)
         a_listbox    = Tk.Listbox( a_frame, height=5 )
@@ -705,6 +709,77 @@ class GUI( object ):
         a_frame.grid_rowconfigure(    0, weight=0 )
         a_frame.grid_rowconfigure(    1, weight=1 )
         return ( a_frame, a_listbox )
+
+    # ---------------------------
+    def make_and_place_transform_buttons_x ( self, a_frame,           text = "no text",
+                                                ix_row   = 5,       ix_col = 5,
+                                                button_var = None,  button_command = None,
+                                                rb_index = 1 ):
+        """
+        special case for commands that call into the controller not the command class 
+        rb below, centered no text
+        make both buttons
+        """
+#        print( f"for {text} index is { ix_col }, {ix_row}" )
+        rbx   =  Tk.Radiobutton( a_frame, text= "",   variable = button_var, value = rb_index )
+        rbx.grid( row = ix_row,  column = ix_col, )   # sticky = rb_sticky )
+
+        a_button = Tk.Button( a_frame , width=10, height=2, text = text )
+        a_button.config( command = button_command  )
+        # placement.place( a_button )
+        a_button.grid( row = ix_row - 1, column = ix_col )
+        return rbx
+
+    # ---------------------------
+#     def make_and_place_transform_buttons_2 ( self, a_frame,              text           = "no text",
+#                                                    ix_row     = 5,       ix_col         = 5,
+#                                                    button_var = None,    button_command = None,
+#                                                    rb_index   = 1 ):
+#         """
+#         rb below, centered no text
+#         make both buttons
+#         new meaning to command_button
+#         """
+# #        print( f"for {text} index is { ix_col }, {ix_row}" )
+#         rbx   =  Tk.Radiobutton( a_frame, text= "",   variable = button_var, value = rb_index )
+#         rbx.grid( row = ix_row,  column = ix_col, )   # sticky = rb_sticky )
+
+#         a_button = Tk.Button( a_frame , width=10, height=2, text = text )
+
+#         # do all without dict see smart_plug
+#         a_button.config( command = lambda: self.controller.button_switcher( a_button ) )
+#         # placement.place( a_button )
+
+#         self.controller.button_dict[ a_button ] = button_command
+#         a_button.grid( row = ix_row - 1, column = ix_col )
+#         return rbx
+
+    # ---------------------------
+    def make_and_place_transform_buttons_3 ( self, a_frame,              text           = "no text",
+                                                   ix_row     = 5,       ix_col         = 5,
+                                                   button_var = None,    button_command = None,
+                                                   rb_index   = 1 ):
+        """
+        rb below, centered no text
+        make both buttons
+        new meaning to command_button
+        """
+#        print( f"for {text} index is { ix_col }, {ix_row}" )
+        rbx   =  Tk.Radiobutton( a_frame, text= "",   variable = button_var, value = rb_index )
+        rbx.grid( row = ix_row,  column = ix_col, )   # sticky = rb_sticky )
+
+        a_button = Tk.Button( a_frame , width=10, height=2, text = text )
+
+        # do all without dict see smart_plug
+        a_button.config( command = lambda: self.controller.button_switcher( a_button ) )
+        # placement.place( a_button )
+
+        a_button.grid( row = ix_row - 1, column = ix_col )
+
+        self.controller.button_dict[ a_button ]       = button_command
+        self.controller.dispatch_dict[rb_index]       = button_command
+
+        return rbx
 
     #----------------------------------------------------------------------
     def write_gui_wt(self, title, a_string ):
@@ -721,16 +796,14 @@ class GUI( object ):
     #----------------------------------------------------------------------
     def write_gui(self, string ):
         """
-        clear and write string to input area
+        clear and write string to display area
         leave disabled
         """
         self.text_in['state'] = 'normal'      # normal  disabled
         self.text_in.delete( 1.0, Tk.END )
         self.text_in.insert( Tk.END, string )
         self.text_in['state'] = 'disabled'      # normal  disabled
-        # self.text_in.see( Tk.END )  # add scrolling
 
-        # self.text_in.delete( 1.0, str( cut ) + ".0" )
 
 if __name__ == "__main__":
 

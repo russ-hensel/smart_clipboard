@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
-#
-#
+
 
 
 """
-actually does the commands and transforms, try to be a little bit decoupled from rest of ap
-CmdProcessor is main class
+actually does the commands and transforms, try to be a little bit decoupled from rest of app
+
 """
 
-# from subprocess import Popen, PIPE
 import os
 import os.path
 import subprocess
@@ -17,7 +15,6 @@ import logging
 
 #local
 from app_global import AppGlobal
-
 
 # ----------------------------------------------
 def   print_uni( a_string_ish ):
@@ -32,8 +29,6 @@ def   print_uni( a_string_ish ):
 class CmdProcessor( object ):
     """
     carry out both commands and transforms
-
-
 
     split into commands and transforms ??
     object executes commands for clip_board.ClipBoard
@@ -51,27 +46,35 @@ class CmdProcessor( object ):
         #
         #self.controller     = controller
         #self.controller     = AppGlobal.controller
-        self.parameters      = AppGlobal.parameters   # for local ref  parameters
+        AppGlobal.cmd_processor   = self
+        self.parameters           = AppGlobal.parameters   # for local ref  parameters
         # self.gui            = self.controller.gui
 
-        self.logger         = logging.getLogger( f"{AppGlobal.logger_id}.{ self.__class__.__name__ }" )
+        self.logger              = logging.getLogger( f"{AppGlobal.logger_id}.{ self.__class__.__name__ }" )
 
         self.logger.debug( "init app_state" )   #
         print( f"logger level in AppState = {self.logger.level}", flush = True )
 
-        self.logger_id      = "xxx"    # !! fix this
+        self.logger_id            = "xxx"    # !! fix this
         #self.parameters          = AppGlobal.parameters
         #AppGlobal.parameters     = self
 
 
+        self.line_join            = "\n"  #
+
+        # !! get rid of next unless change ideas
+        self.line_sep             = "\n"  # use to join lines !! not complely implemented
+        self.line_split           = "\n"
+        self.clean_char           = None    # char to clean out perhaps "\r"
+
 #        self.star_commands  =  { "*>np":       self.do_if_star_bat_cmd,
 #         list of *>cmds that we implement and in this order                        }
-        self.star_commands  =  [ self.do_if_star_bat_cmd,
-                                 self.do_if_edit_text_file,
-                                 self.do_if_star_url_cmd,
-                                 self.do_if_star_shell_cmd       ]
+        self.star_commands        =  [ self.do_if_star_bat_cmd,
+                                       self.do_if_edit_text_file,
+                                       self.do_if_star_url_cmd,
+                                       self.do_if_star_shell_cmd       ]
 
-        self.url_valid_prefixs       = [ "www.", "http://", "https://" ]
+        self.url_valid_prefixs     = [ "www.", "http://", "https://" ]
 
 #        # file commands do they use a list instead of a string ???
 #        self.star_file_commands  =  { "*>bat":       self.do_if_star_bat_cmd,
@@ -140,7 +143,6 @@ class CmdProcessor( object ):
             *>
             can we mix commands ?? perhaps test
             """
-
             if ( cmd_lines[0].startswith(  "*>" ) ):
 
                 # *>bat is one of these but if used is only one and must start on first line ( any text after -- ignore for now )
@@ -185,7 +187,7 @@ class CmdProcessor( object ):
                 msg    = "True did_cmd"
                 AppGlobal.print_debug( msg )
 
-                return( True, str( self.did_what ), "\n".join( self.return_texts ) )
+                return( True, str( self.did_what ), self.line_sep.join( self.return_texts ) )
             else:
                 # continue to try other commands
                 pass
@@ -207,7 +209,7 @@ class CmdProcessor( object ):
                     break
             if self.did_cmd:
                 print( " True did_cmd ")
-                return( True, str( self.did_what ), "\n".join( self.return_texts ) )
+                return( True, str( self.did_what ), self.line_sep.join( self.return_texts ) )
             else:
                 pass
 
@@ -227,7 +229,6 @@ class CmdProcessor( object ):
         found_end     = False
         bat_lines     = []
 
-
         for i_line in cmd_lines[1:]:
 
             if i_line == "*>end":
@@ -239,7 +240,7 @@ class CmdProcessor( object ):
         if not( found_end ):
             return ( False, "no *>end", "xxx" )
 
-        bat_string  =  "\n".join( bat_lines )
+        bat_string  =  self.line_sep.join( bat_lines )
 
         #print( "bat string,=  " + str ( bat_string ) )
         # stdout_stuff           = "stdout_stuff disabled "
@@ -257,13 +258,15 @@ class CmdProcessor( object ):
         self.return_texts   = stdout_stuff # may not be list ??
         return ( True, "ran bat, returned = ", stdout_stuff )
 
-
     # ----------------------------------------
     def do_star_url_line(  self,  a_line ):
         """
         v3
         do this one line at a time return
         (flag action, ret text )
+
+        # cmd> *>url  https://stackoverflow.com/questions/4302027/how-to-open-a-url-in-python
+
         """
         done       = False
         action     = "no do_star_url"   # normally ignored, but may be usefull for debugging
@@ -271,11 +274,6 @@ class CmdProcessor( object ):
 
         print( "url line =" + a_line )
         if a_line.startswith(  "*>url" ):
-
-        # cmd> url  https://stackoverflow.com/questions/4302027/how-to-open-a-url-in-python
-        # cmd> url  http://www.instructables.com/id/Bandsaw-Stand-From-Scrap-Lumber/
-        # a_url  = r"http://www.instructables.com/id/Bandsaw-Stand-From-Scrap-Lumber/"
-
             a_url     = a_line[5:]   # .strip()    # should strip "*>url"  5 = len( "*>url" )
 
             print( " *>url>> " + a_url )
@@ -284,7 +282,7 @@ class CmdProcessor( object ):
             url_flag, a_url = self.is_url( a_url )
             if url_flag:
 
-                self.controller.logger.info( "webbrowser.open( " + a_url )
+                AppGlobal.controller.logger.info( "webbrowser.open( " + a_url )
 
                 webbrowser.open( a_url, new=0, autoraise=True )
                 done       = True
@@ -295,11 +293,10 @@ class CmdProcessor( object ):
 
     # ----------------------------------------
     def do_star_shell_line(  self,  a_line ):
-
         """
         v3
         do this one line at a time return
-        ?? no caputre of returned data
+        ?? no capture of returned data
         (flag action, ret text )
         """
         done       = False
@@ -309,10 +306,6 @@ class CmdProcessor( object ):
         print( "url line =" + a_line )
         if a_line.startswith(  "*>shell" ):
 
-        # cmd> url  https://stackoverflow.com/questions/4302027/how-to-open-a-url-in-python
-        # cmd> url  http://www.instructables.com/id/Bandsaw-Stand-From-Scrap-Lumber/
-        # a_url  = r"http://www.instructables.com/id/Bandsaw-Stand-From-Scrap-Lumber/"
-
             a_shell     = a_line[7:]   # .strip()    # should strip "*>url"  5 = len( "*>url" )
 
             print( "*>shell " + a_shell )
@@ -321,7 +314,7 @@ class CmdProcessor( object ):
             # check if file ???
             if True:
 
-                self.controller.logger.info( "*>shell: " + a_shell )
+                AppGlobal.logger.info( "*>shell: " + a_shell )
                 os.popen( a_shell )
 
                 done       = True
@@ -332,7 +325,6 @@ class CmdProcessor( object ):
 
     # ----------------------------------------
     def do_star_text_line(  self,  a_line ):
-
         """
         v3
         do this one line at a time return
@@ -345,10 +337,6 @@ class CmdProcessor( object ):
 
         print( "text line =" + a_line )
         if a_line.startswith(  "*>text" ):
-
-        # cmd> url  https://stackoverflow.com/questions/4302027/how-to-open-a-url-in-python
-        # cmd> url  http://www.instructables.com/id/Bandsaw-Stand-From-Scrap-Lumber/
-        # a_url  = r"http://www.instructables.com/id/Bandsaw-Stand-From-Scrap-Lumber/"
 
             a_text     = a_line[6:]   # .strip()    # should strip "*>url"  5 = len( "*>url" )
 
@@ -371,6 +359,9 @@ class CmdProcessor( object ):
     def do_text_line(  self, a_line ):
         """
         v3
+
+
+        checks it is an ok type of file and that it exists
         """
         # default for fail
         done       = False
@@ -391,12 +382,13 @@ class CmdProcessor( object ):
 
         # print( fn + " is a text file " )
         #print_uni( "do_edit_text_file>>>>" + str( a_cmds )  +  "<<<<<" )  #str may fail, may need encoding fix
-
-        proc       = subprocess.Popen( [ self.parameters.ex_editor, fn  ] )  # a_cmds[1:999]  ]  ) # self.parameters.pylogging_fn ] )
+        ##
+        #proc       = subprocess.Popen( [ self.parameters.ex_editor, fn  ] )  # a_cmds[1:999]  ]  ) # self.parameters.pylogging_fn ] )
+        AppGlobal.os_open_txt_file( fn )
 
         done       = True
         action     = "text_file_found"
-        ret_text   = a_line      # what is standard for retured text
+        ret_text   = a_line      # what is standard for returned text
 
         return ( done, action, ret_text )
 
@@ -444,8 +436,6 @@ class CmdProcessor( object ):
                 is_url = True
 
         return ( is_url, test_url )
-
-
 
 #==================== v2 may be updated ===============
 
@@ -556,35 +546,74 @@ class CmdProcessor( object ):
 
         return ( ret_is_ok, ret_action, ret_mulp_text )
 
-    # ----------------------------------------
-    def do_if_url_cmd(self, a_string, ignore ):
+   # ----------------------------------------
+    def do_if_edit_text_file( self, a_file_cmd ):
         """
-        go to a url only if a url or multiples are found in string
-        to start with lets have one url per line no junk at beginning of line, later clean up one url per line ??
-        return ( done, what, text )
-        may want to quit if not found on first line
-
-        Return:  usual tuple
+        Think files must start from a drive letter -- windows not url's
+        test copy
+        should we do any clean up, perhaps at least whitespace ....  trailing blanks kill it now !!
+        *>shell notepad++.exe
+        *>shell D:/apps/Notepad++/notepad++.exe
+        D:/Russ/2015/instruct_view.txt
+        D:/Russ/2015/ladyadair.txt
+        D:/PhotosRaw/2016/BoxInstructable\DSCN        D:/Russ/2015/instruct_view.txtG
+        return   tuple ( worked, what, file_name ) .....
         """
-        went_to      = []   # record where we went
-        lines        = a_string.split()
-        for ix_line, i_line in enumerate( lines ):
+        # print "-------------------"
+        # print( "test text " + a_file_name )
 
-            i_line = i_line.strip()
-            ok, b_url  = self.is_url( i_line )
-            if  ok :
-                self.process_url( i_line )
-                went_to.append( i_line )
-            else:
-                if ix_line == 0:
-                    msg = "no url on line ix = 0 probably should return "
-                    AppGlobal.print_debug( msg )
+        # ----------------   look at:    def do_if_star_url_cmd( self, a_string ):
 
-        if ( len( went_to )  > 0 ):
-            a_text   = "\n".join( went_to )
-            return  ( True, "found url's", a_text )
+        print ( "do_if_edit_text_file" )
+        ( flag, lines )   = self.is_line_cmd( "*>text", a_file_cmd )
+
+        if not( flag ):
+            return ( False, "", "" )
+        # else:
+        print( "*>text" )
+        print( str( lines ) )
+
+        for  fn in lines:
+                self.do_edit_text_file( fn )
+        return ( True, "edit text", lines  )
+
+    def do_if_snip_file( self, a_file_name, a_ext, a_exe ):
+        """
+        used to use do_if_ext_with
+        rethinking specification
+        this may be short term
+        for now ignore all but a_file_name
+
+        """
+        print( " do_if_snip_file"    )
+        AppGlobal.os_open_a_snip_file( a_file_name )
+        return ( True, "do_if_snip_file", a_file_name  )
+
+   # ----------------------------------------
+    def do_if_ext_with( self, a_file_name, a_ext, a_exe ):
+        """
+        execute if a file name ending with e_a_ext, launch with a_exe
+        a_file_name, string with the file name, we do no clean up maybe we should
+        return usual tuple
+        a_ext   a list or None for no checking of extension    --
+        ?? used for opening snip files
+        """
+        # print "-------------------"
+        # print( "test text " + a_file_name )
+        if ( a_ext is None ):
+            flag, fn        = self.is_filename( a_file_name  )
+            if not( flag ):
+                return ( False, "not file_name", a_file_name  )
         else:
-            return  ( False, "did not find url's", "" )
+            flag, fn, ext   =  self.is_filename_ext( a_file_name, [ a_exe ]   )
+            if not( flag ):
+                return ( False, "not ext file_name", a_file_name  )
+
+        print_uni( "do_if_ext_with>>>>" + fn  +  "<<<<<" )  #str may fail, may need encoding fix
+        proc = subprocess.Popen( [ a_exe, fn  ] )  # a_cmds[1:999]  ]  ) # self.parameters.pylogging_fn ] )
+
+        return ( True, "exe file", fn  )
+
 
    # ----------------------------------------
     def is_line_cmd( self, a_cmd, a_string ):
@@ -703,17 +732,7 @@ class CmdProcessor( object ):
             #pass
             os.popen( i_line )
 
-        #print ( lines )
-        # next will run and return stuff to us
-        # for bat put exit on the end?? yes if no command window else not ??
-#        bat_string  =  "\n".join( lines )
-#        po     = subprocess.Popen(  [  'cmd.exe', ], shell=True,    stdout=subprocess.PIPE,    stdin=subprocess.PIPE )   #  captures output
-#
-#
-#        stdout_stuff, stderr_stuff    = po.communicate( input = bat_string, ) # python 3 timeout=None )  # try to fix bat error issue
-        #print "stdout_stuff"
-        #print stdout_stuff
-        new_text  = "\n".join( lines )
+        new_text  = self.line_sep.join( lines )
         return ( True, "shells_found..popopen  ",  new_text )
 
     # ----------------------------------------
@@ -749,7 +768,7 @@ class CmdProcessor( object ):
         #print ( lines )
         # next will run and return stuff to us
         # for bat put exit on the end?? yes if no command window else not ??
-#        bat_string  =  "\n".join( lines )
+#        bat_string  =  self.line_sep.join( lines )
 #        po     = subprocess.Popen(  [  'cmd.exe', ], shell=True,    stdout=subprocess.PIPE,    stdin=subprocess.PIPE )   #  captures output
 #
 #
@@ -790,7 +809,7 @@ class CmdProcessor( object ):
         if not( found_end ):
             return ( False, "no *>end", "xxx" )
 
-        bat_string  =  "\n".join( bat_lines )
+        bat_string  =  self.line_sep.join( bat_lines )
 
         #print( "bat string,=  " + str ( bat_string ) )
         # stdout_stuff           = "stdout_stuff disabled "
@@ -805,7 +824,6 @@ class CmdProcessor( object ):
         #print( "stdout_stuff" , "   ", stdout_stuff )
 
         return ( True, "ran bat ran, returned = ", stdout_stuff )
-
 
     # ----------------------------------------
     def do_if_star_cmd( self, a_string ):
@@ -836,8 +854,6 @@ class CmdProcessor( object ):
         *>shell notepad++.exe      fail not full path to file
         *>shell D:/apps/Notepad++/notepad++.exe      ok
         look in readme.txt   for test cases
-
-
         """
         print( "------- do_if_star_cmd ------------" )
         print( self.star_commands )
@@ -849,62 +865,35 @@ class CmdProcessor( object ):
         return ( False, "do_star_cmd did zip", "" )
 #
     # ----------------------------------------
-    def do_if_ext_with( self, a_file_name, a_ext, a_exe ):
+    def do_if_url_cmd(self, a_string, ignore ):
         """
-        execute if a file name ending with e_a_ext, launch with a_exe
-        a_file_name, string with the file name, we do no clean up maybe we should
-        return usual tuple
-        a_ext   a list or None for no checking of extension    --
-        """
-        # print "-------------------"
-        # print( "test text " + a_file_name )
-        if ( a_ext is None ):
-            flag, fn        = self.is_filename( a_file_name  )
-            if not( flag ):
-                return ( False, "not file_name", a_file_name  )
-        else:
-            flag, fn, ext   =  self.is_filename_ext( a_file_name, [ a_exe ]   )
-            if not( flag ):
-                return ( False, "not ext file_name", a_file_name  )
-
-        print_uni( "do_if_ext_with>>>>" + fn  +  "<<<<<" )  #str may fail, may need encoding fix
-        proc = subprocess.Popen( [ a_exe, fn  ] )  # a_cmds[1:999]  ]  ) # self.parameters.pylogging_fn ] )
-
-        return ( True, "exe file", fn  )
-
-    # ----------------------------------------
-    def do_if_edit_text_file( self, a_file_cmd ):
-        """
-        Think files must start from a drive letter -- windows not url's
-        test copy
-        should we do any clean up, perhaps at least whitespace ....  trailing blanks kill it now !!
-        *>shell notepad++.exe
-        *>shell D:/apps/Notepad++/notepad++.exe
-        D:/Russ/2015/instruct_view.txt
-        D:/Russ/2015/ladyadair.txt
-        D:/PhotosRaw/2016/BoxInstructable\DSCN        D:/Russ/2015/instruct_view.txtG
-        return   tuple ( worked, what, file_name ) .....
-        """
-        # print "-------------------"
-        # print( "test text " + a_file_name )
-
-        # ----------------   look at:    def do_if_star_url_cmd( self, a_string ):
-        """
-
+        go to a url only if a url or multiples are found in string
+        to start with lets have one url per line no junk at beginning of line, later clean up one url per line ??
         return ( done, what, text )
+        may want to quit if not found on first line
+
+        Return:  usual tuple
         """
-        print ( "do_if_edit_text_file" )
-        ( flag, lines )   = self.is_line_cmd( "*>text", a_file_cmd )
+        went_to      = []   # record where we went
+        lines        = a_string.split()
+        for ix_line, i_line in enumerate( lines ):
 
-        if not( flag ):
-            return ( False, "", "" )
-        # else:
-        print( "*>text" )
-        print( str( lines ) )
+            i_line = i_line.strip()
+            ok, b_url  = self.is_url( i_line )
+            if  ok :
+                self.process_url( i_line )
+                went_to.append( i_line )
+            else:
+                if ix_line == 0:
+                    msg = "no url on line ix = 0 probably should return "
+                    AppGlobal.print_debug( msg )
 
-        for  fn in lines:
-                self.do_edit_text_file( fn )
-        return ( True, "edit text", lines  )
+        if ( len( went_to )  > 0 ):
+            a_text   = self.line_sep.join( went_to )
+            return  ( True, "found url's", a_text )
+        else:
+            return  ( False, "did not find url's", "" )
+
 
     # ----------------------------------------
     def do_if_file_name( self, a_string ):
@@ -943,7 +932,7 @@ class CmdProcessor( object ):
     def do_edit_text_file( self, a_cmds ):
         #
         """
-        move this to appGlobal implementation
+        move this to appGlobal implementation !!
         edit a file in text editor, name is not great
         may want to break file name on space to elim junk
         ??? return ( done_flag, string_what_i_did )
@@ -968,81 +957,113 @@ class CmdProcessor( object ):
         go to url, clean up head and tail with strip
         return string saying what we did
         """
-        import webbrowser
-        # cmd> url  https://stackoverflow.com/questions/4302027/how-to-open-a-url-in-python
-        # cmd> url  http://www.instructables.com/id/Bandsaw-Stand-From-Scrap-Lumber/
-        # a_url  = r"http://www.instructables.com/id/Bandsaw-Stand-From-Scrap-Lumber/"
-
-        print( " url>> " + a_url )
+        print( "process_url url>> " + a_url )
 
         a_url  = a_url.strip( )
 
-        self.controller.logger.info( "webbrowser.open( " + a_url )
-
+        AppGlobal.logger.info( "webbrowser.open( " + a_url )
         webbrowser.open( a_url, new=0, autoraise=True )
+
         return "opening " + a_url
 
+# ----------------All Transforms ( mostly alpha order ) and some of helpers to be moved -----
+    """
+    for all of these there is the issue of cr/lf  or /n /r
+    could replace the pair with a /n
+    then what if seperated with just /r  -- change all /r to /n? does this do it
+    for safety replace all lf/cr with /n
+    not implemented
+    """
+
+    def file_list_to_gallery_str( self, file_list ) :
+        """
+        is this a transform if so fix name -- looks like it is a helper
+        useful for wiki image uploads
+        <gallery>
+          Image: Key hole sketch detailed.png |‎ Key hole sketch detailed.png ‎    *image1
+          Image: Key hole pad.png ‎ | Key hole pad.png
+          Image: Body with kh sketch closeup.png ‎| Body with kh sketch closeup.png ‎
+          Image: Body 2a.png |‎ Body 2a.png ‎
+          Image: Body 2.png |‎ Body 2.png
+          Image: Body.png |‎ Body.png
+          Image: Assembly.png ‎| Assembly.png
+        </gallery>
+
+        """
+        if len( file_list ) == 0:
+            return ""
+
+        ret_str   = "<gallery>\n"
+        for ix, i_file in enumerate( file_list ):
+            ret_str   = f"{ret_str}   Image: {i_file} | {i_file} #{ix}\n"
+
+        ret_str       = f"{ret_str}</gallery>"
+
+        return ret_str
+
+   # ------------------------------------------
+    def file_list_to_image_str( self, file_list ) :
+        """
+        <!-------------- image 1 ------------->
+        [[Image: Body with kh sketch closeup.png |500px|left|The Body]]
+        Sketch place just where the plug is to go.
+        <br style="clear:both" />
+
+        """
+        if len( file_list ) == 0:
+            return ""
+
+        ret_str   = "\n"
+        for ix, i_file in enumerate( file_list ):
+            ret_str   = f"{ret_str}<!-------------- image {ix} ------------->\n"
+            ret_str   = f"{ret_str}[[Image: {i_file} |500px|left| image {ix} image {i_file}]]\n"
+            ret_str   = f"{ret_str}text for file  {i_file} image {ix}\n"
+            ret_str   = f"{ret_str}<br style=\"clear:both\" />\n\n"
+        #ret_str    = f"{ret_str}</gallery>"
+
+        return ret_str
+
     # ------------------------------------------
-    def transform_alt_line_sort(self, in_text, ):
+    def transform_del_dups( self, in_text, ):
+        """
+        split into lines, drop trailing spaces and blank lines and sort and delete dups
+        use a set instead ... no sorting necessary, sort at end ?? try both
+        """
+        lines, _   = self.clean_string_to_list( in_text, delete_tailing_spaces = True,
+                                                delete_comments = False, delete_blank_lines = True)
+
+        # lines.sort()
+#       started next
+#        last_line      = None
+#        no_dup_lines   = []
+#        for i_line in lines:
+
+        a_set    = set( lines )
+        lines    = list( a_set )
+        lines.sort()
+
+        ret_text = self.line_join.join( lines )
+
+        return ( True, f"delete dups ( and sort )", ret_text  )
+
+    # ------------------------------------------
+    def transform_alt_line_sort( self, in_text, ):
         """
         split up alternate lines and sort by the first line, then reassemble
         drop blank lines, which come from copy url and possibly other places
         ?? should we drop comment lines #
         """
-        return  self.transform_line_sort( in_text, which_line = 0 )
-#        lines_0 = in_text.split("\n")
-#        if ( len( lines_0 )  < 2 ):
-#            return (False, "not", "2 short to sort")
-#
-#        # clean up white space often every third line
-#        lines_1   = []
-#        for i_line in lines_0:
-#            line = i_line.strip()
-#            if line != "":  # not sure why this is good idea
-#                lines_1.append(line)
-#
-#        odd         = True  # we are going to split into odd and even lines
-#        lines_a     = []
-#        lines_b     = []
-#
-#        for i_line in ( lines_1 ):
-#            # alternate odd even
-#            if odd:
-#                lines_a.append( i_line )
-#                odd    = False
-#            else:
-#                lines_b.append( i_line )
-#                odd    = True
-#
-#        if not( odd ):       # even up the lists
-#               lines_b.append( "i_line" )
-#
-#        zipped         = zip( lines_a, lines_b) # Output: Zip Object. <zip at 0x4c10a30>
-#
-#        sorted_zip     = sorted( zipped,  key=lambda i_list: i_list[0] )
-#        # rebuild the list
-#        out_list      = []
-#        for a_sorted in sorted_zip:
-#            a, b = a_sorted
-#            #a_line = a_line + "\n"     # could make big list and join, may be better
-#            out_list.append( a )
-#            out_list.append( b )
-#            out_list.append( "" )       # put in a blank line for readabality
-#        out_lines    = "\r\n".join( out_list )
-#
-#        print( out_lines )
-#        return ( True, "sorted", out_lines )
+        return  self.transform_altt_line_sort( in_text, which_line = 0  )
 
-
-    # ------------------------------------------
-    def transform_line_sort(self, in_text, which_line = 0 ):
+    #====----------------------------  !! need to rename
+    def transform_altt_line_sort( self, in_text, which_line = 0 ):
         """
         utility for alternate line sorts, start setting up with options
         use old functions for setting options and calling
         Args:   which_line  line to sort must be 0 or 1
         Return: tuple usual conventions look around
         """
-        lines_0 = in_text.split("\n")
+        lines_0 = in_text.splitlines()
         if ( len( lines_0 )  < 2 ):
             return (False, "not", "2 short to sort")
 
@@ -1080,10 +1101,292 @@ class CmdProcessor( object ):
             out_list.append( a )
             out_list.append( b )
             out_list.append( "" )       # put in a blank line for readabality
-        out_lines    = "\r\n".join( out_list )   # crlf to make windows happy guy
+        out_lines    = self.line_sep.join( out_list )   # crlf to make windows happy guy
 
         #print( out_lines )
         return ( True, f"sorted on line {which_line}", out_lines )
+
+    # ------------------------------------------
+    def transform_all_line_sort(self, in_text, del_dups = True ):
+        """
+        !! quite a mess
+        utility for alternate line
+        Args:   which_line  line to sort must be 0 or 1
+        Return: tuple usual conventions look around
+        connect at
+        """
+        print( "cmd_processor.transform_all_line_sort() -- implementation not complete " )
+
+        lines_0 = in_text.split("\n")
+        if ( len( lines_0 )  < 2 ):
+            return (False, "not", "2 short to sort")
+
+        # clean up white space
+        # !! change to list comp
+        # probably will be sorted oddly
+        lines_1   = []
+        for i_line in lines_0:
+            line = i_line.strip()
+            if line != "":  # not sure why this is good idea -- get rid of blank lines
+                lines_1.append( i_line )
+
+
+        lines_sorted    = sorted( lines_1, ) #  key=lambda i_list: i_list[ which_line ] )
+        # # rebuild the list
+        # out_list      = []
+        # for a_sorted in sorted_zip:
+        #     a, b = a_sorted
+        #     out_list.append( a )
+        #     out_list.append( b )
+        #     out_list.append( "" )       # put in a blank line for readabality
+        # out_lines    = "\r\n".join( out_list )   # crlf to make windows happy guy
+
+        print( lines_sorted )
+
+        if del_dups:    # now delete dups
+            lines_no_dups = []
+            last_line = None
+            for i_line in lines_sorted:
+                if i_line != last_line:
+                    lines_no_dups.append( i_line )
+
+                last_line = i_line
+
+            lines_sorted = lines_no_dups  # restore name
+
+        out_lines    = self.line_sep.join( lines_sorted )   # crlf to make windows happy guy
+
+        return ( True, f"sorted on lines ", out_lines  )
+
+    # ------------------------------------------
+    def transform_cap( self, in_text,  ):
+        """
+        capitalize
+        """
+        ret_text     = in_text.upper()
+        lines,  __   = self.clean_string_to_list( ret_text )
+        ret_text     = self.line_join.join( lines )
+
+        return ( True, "Capitalized", ret_text )
+
+    # ------------------------------------------
+    def transform_comma_sep(self, in_text, ):
+        """
+        for email concat, extract each line, put in a comma to replace \n
+        ?? enhance other seps, quote elements..... look a csv stuff that might already exist
+        """
+        lines = in_text.split( self.line_split )
+        non_blank_lines = [a_line.strip() for a_line in lines if len(a_line.strip()) > 0]  # drop empty line
+        # rint non_blank_lines
+
+        if len(non_blank_lines) == 0:
+            return (False, "commas in", "")
+
+        ret_text = ",".join(non_blank_lines)
+
+        return (True, "commas in", ret_text)
+
+    # ------------------------------------------
+    def transform_delete_dup(self, in_text, ):
+        """
+        !! this itself is the old way, delete one
+        delete identical lines
+        blank lines are ignored? and passed through
+        consider a forced sort first .. that would take out blank lines !! do it
+
+        """
+        ix_deleted     = 0
+        new_lines      = []
+        last_line      = None
+        lines = in_text.split( self.line_split )
+        for i_line in lines:
+            clean_line     = i_line.strip( "\r" )
+            clean_line     = clean_line.rstrip(  )
+            if clean_line == "":
+                new_lines.append( "" )
+            else:
+                if clean_line == last_line:
+                    pass
+                    ix_deleted  +=1
+                else:
+                    new_lines.append( clean_line )
+                    last_line = clean_line
+        # done i_line
+
+        ret_text   = self.line_sep.join( new_lines )
+
+        #ret_text = "no ws not implemented"
+        return ( True, f"delete dups  {ix_deleted}", ret_text )
+
+    # ------------------------------------------
+    def transform_insert_spaces(self, in_text, ):
+        """
+        also know as indent
+        for now do to all lines   put in 4 spaces, later
+        may take from parms and or strip spaces on left first
+        do a strip on right -- should this be another function ??
+        add number of spaces as argument !!
+        """
+        return self._transform_prefix_line( in_text, 4*" " )
+
+    # ------------------------------------------
+    def transform_less_ws( self, in_text,  ):
+        """
+        less white space -- multiple spaces reduced to one
+        """
+        ret_text   = " ".join( in_text.split() )
+        #ret_text = "no ws not implemented"
+        return ( True, "less white space", ret_text )
+
+    # ------------------------------------------
+    def transform_line_sort( self, in_text, ):
+        """
+        split into lines, drop trailing spaces and blank lines and sort
+        """
+        lines, _   = self.clean_string_to_list( in_text, delete_tailing_spaces = True,
+                                                delete_comments = False, delete_blank_lines = True)
+
+        lines.sort()
+        ret_text = self.line_join.join( lines )
+
+        return ( True, f"sorted on lines", ret_text  )
+
+    # -----------------------------------------
+    def transform_lower( self, in_text,  ):
+        """
+        lower -- always works
+        """
+        ret_text     = in_text.lower()
+        lines,  __   = self.clean_string_to_list( ret_text )
+        ret_text     = self.line_join.join( lines )
+
+        return ( True, "lower", ret_text )
+
+    # -----------------------------------------
+    def transform_no_blank_lines( self, in_text,  ):
+        """
+        transform_no_blank_lines -- always works
+        """
+        lines, _     = self.clean_string_to_list( in_text, delete_tailing_spaces = True,
+                                                delete_comments = False, delete_blank_lines = True)
+        ret_text     = self.line_join.join( lines )
+
+        return ( True, "No Blank Lines", ret_text )
+
+    # ------------------------------------------
+    def transform_no_ws( self, in_text,  ):
+        """
+        no white space -- do not need clean text... here
+        """
+        ret_text   = "".join( in_text.split() )
+        #ret_text = "no ws not implemented"
+        return ( True, "no white space", ret_text )
+
+    # ------------------------------------------
+    def transform_no_trailing_space( self, in_text,  ):
+        """
+        trailing space
+        do we have a pattern here to factor out  -- yes use it
+        split/clean( drop blank ) apply function, join ???
+        str1.replace( 'bar ', '-bar- ' )
+        """
+        processed_lines   = []
+        line_list         = in_text.split("\n")
+
+        for i_line  in line_list:
+            # could be done in one line and use list comp
+            clean_line     = i_line.strip( "\r" )
+            clean_line     = clean_line.rstrip(  )  # rstrip
+            processed_lines.append( clean_line )
+#           print( f">>{clean_line.strip( ' ' )}<<" )
+
+        ret_text   = self.line_sep.join( processed_lines )
+
+        #ret_text = "no ws not implemented"
+        return ( True, "no trailing space", ret_text )
+
+    # ------------------------------------------
+    def transform_number_lines( self, in_text,  ):
+        """
+        put a number before each line, not blank lines, just copy through
+        add option for periods..... think about it
+        trailing spaces stripped
+        """
+        ix_line_no       = 1
+        numbered_lines   = []
+
+        line_list, _     = self.clean_string_to_list( in_text, delete_tailing_spaces = True,
+                                                  delete_comments = False, delete_blank_lines = False )
+
+        for i_line  in line_list:
+
+            if i_line  != "":
+                #print( f">>{clean_line.strip( ' ' )}<<" )
+                numbered_lines.append( f"{ix_line_no} {i_line}" )
+                ix_line_no     += 1
+            else:
+                 numbered_lines.append( "" )
+
+        ret_text   = self.line_join.join( numbered_lines )
+        return ( True, "numbered lines", ret_text )
+
+    # ------------------------------------------
+    def transform_sage(self, in_text, ):
+        """
+        for sage to sage math notebook
+        """
+        lines = in_text.split( "\r" )
+
+        new_lines = []
+
+        for a_line in lines:
+            b_line     = a_line.replace("\n", "")
+            new_lines.append( b_line )
+
+        lines = new_lines
+        #non_blank_lines = [a_line.strip() for a_line in lines if len(a_line.strip()) > 0]  # drop empty line
+
+        #print( lines )
+
+        # lines to drop  --
+        # lines to blank
+        # lines to comment
+
+        # replace an entire of line
+        for ix_line, a_line in enumerate( lines ):
+            #print( a_line )
+            a_line     = a_line + " "
+            print( a_line )
+            print("")
+            if a_line.startswith( "SageMath " ):
+                print("fix SageMath")
+                a_line = " "
+                lines[ix_line]  = a_line
+
+        # -- words to blank
+        # replace at beginning of line
+        # replace sage with blank
+        for ix_line, i_line in enumerate( lines ):
+            #a_line = a_line.replace( )
+            if i_line.startswith( "sage: " ):
+                i_line = i_line[6:]
+                lines[ix_line]  = i_line
+
+#        lines_2 =
+#        # rint non_blank_lines
+#
+#        if len(non_blank_lines) == 0:
+#            return (False, "commas in", "")
+
+        ret_text = self.line_sep.join( lines )
+
+        return (True, "notebook edits", ret_text)
+    # -----------------------------------------
+    def transform_star_line(self, in_text, ):
+        """
+        put * at front of each line for wiki bullet points
+        """
+        return self._transform_prefix_line( in_text, "* " )
 
     # ------------------------------------------
     def transform_star_shell(self, in_text, ):
@@ -1093,55 +1396,49 @@ class CmdProcessor( object ):
         """
         return self._transform_prefix_line( in_text, "*>shell  ")
 
-
-
-    # ------------------------------------------
-    def transform_insert_spaces(self, in_text, ):
-        """
-        also know as indent
-        for now do to all lines   put in 4 spaces, later
-        may take from parms and or strip spaces on left first
-        do a strip on right -- should this be another function ??
-        """
-
-        return self._transform_prefix_line( in_text, 4*" " )
-
-    # ------------------------------------------
-    def transform_star_line(self, in_text, ):
-        """
-        put * at front of each line for wiki bullet points
-        """
-        return self._transform_prefix_line( in_text, "* " )
-
     # ------------------------------------------
     def _transform_prefix_line(self, in_text, a_prefix, new_nl = "\r\n"  ):
         """
         this works for all the prefix operations
         for now do to all lines   put in a_pfefix, later
         may take from parms and or strip spaces on left first
-        do a strip on right -- should this be another function ??
-        do we have to worry about lines seperated with \r\n and what should we add back in
-        strings have a replace method can replace \r\n with \n as a first step
+
         """
+        lines0, _     = self.clean_string_to_list( in_text, delete_tailing_spaces = True,
+                                                delete_comments = False, delete_blank_lines = True)
 
-        lines0 = in_text.split("\n")
-
-        lines1 = []
-
-#       this may have stripped \r at end of strings if any
-#        for i_line in lines0:
-#            line = i_line.strip()
-#            if line != "":  # not sure why this is good idea
-#                lines1.append( line )
-
-#        odd      = True  # we are going to split into odd and even lines
         lines2   = []
-        ## change me to list comp
+
         for ix, i_line in enumerate( lines0 ):  # !! unless gets more complicated change to list comp
             lines2.append( a_prefix  + i_line   )
 
-        new = new_nl.join( lines2 )
+        new = self.line_join.join( lines2 )
         return ( True, f"prefixed with >>{a_prefix}<<", new )
+
+    # ------------------------------------------
+    def transform_tab_to_space( self, in_text,  ):
+        """
+        tabs converted to spaces
+        """
+        replace_text   = 4*" "
+        ret_text   =  in_text.replace( "\t", replace_text )
+
+        return ( True, "tabs to spaces", ret_text )
+
+    # ------------------------------------------
+    def transform_test( self, in_text,  ):
+        """
+        test -- look at supporting stuff
+        use comments -- examine with care
+        """
+        # test comment out if not wanted
+        print( "cmd_processor.transform_test()" )
+
+        lines       = self.clean_string_to_list( in_text )
+        lines, _    = self.clean_string_to_list( in_text, delete_comments = True )  # _ num deleted lines
+        ret_text    = self.line_sep.join( lines  )
+
+        return ( True, "test clean text", ret_text )
 
     # ------------------------------------------
     def transform_url_to_helpdb(self, in_text, ):
@@ -1176,7 +1473,7 @@ class CmdProcessor( object ):
                 # if first line does not start with http or https
                 # we will return False
                 if ix == 1:  # 2 in a way fix this?
-                    #  add www,  use in to find a beinning  !! may need a bit mopre work
+                    #  add www,  use in to find a beinning  !! may need a bit more work
                     #  https://snippets.readthedocs.org/en/latest/
                     #  012345
                     #  !! need to check for both http and htts
@@ -1193,7 +1490,7 @@ class CmdProcessor( object ):
                 lines2.append( "" )  # for a blank line, or could be put in above
                 odd = True
 
-        new = '\r\n'.join( lines2 )
+        new = self.line_sep.join( lines2 )
         return ( True, "urls to helpdb", new )
 
     # ------------------------------------------
@@ -1246,9 +1543,8 @@ class CmdProcessor( object ):
                 lines2.append( i_line + " " + part_b  )
                 odd = True
 
-        new = '\r\n'.join( lines2 )
+        new = self.line_sep.join( lines2 )
         return (True, "transform_url_to_helpdb", new)
-
 
     # ------------------------------------------
     def transform_upload_log(self, in_text, ):
@@ -1303,94 +1599,11 @@ class CmdProcessor( object ):
             # else:
             #     print( f" File: not found in {i_line}" )
 
-
         ret_str   = self.file_list_to_gallery_str( lines2 )
 
         ret_str   = f"{ret_str}\n{self.file_list_to_image_str( lines2 )}"
 
         return (True, "upload_log", ret_str)
-
-
-
-        # odd = True  # we are going to split into odd and even lines
-        # lines2 = []
-
-        # for ix, i_line in enumerate(lines1):
-
-        #     # alternate odd even
-        #     if odd:
-        #         part_b = i_line
-        #         odd    = False
-        #     else:
-        #         # if first line does not start with http or https
-        #         # we will return False
-        #         if ix == 1:  # 2 in a way fix this?
-        #             #  add www,  use in to find a beinning
-        #             #  https://snippets.readthedocs.org/en/latest/
-        #             #  012345
-        #             #  !! need to check for both http and htts
-        #             # !! find and use is_url function
-        #             prefix = i_line[0:4]
-        #             if prefix != "http":
-        #                 prefix = i_line[0:5]
-        #                 if prefix != "https":
-        #                     self.logger.info("prefix " + prefix)
-        #                     return (False, "not http or https", "")
-
-        #         lines2.append("*'''[" + i_line + " " + part_b + " ]'''")
-        #         odd = True
-
-        # new = '\r\n'.join( lines2 )
-        # return (True, "upload_log", new)
-
-    # ------------------------------------------
-    def file_list_to_gallery_str( self, file_list ) :
-        """
-        <gallery>
-          Image: Key hole sketch detailed.png |‎ Key hole sketch detailed.png ‎    *image1
-          Image: Key hole pad.png ‎ | Key hole pad.png
-          Image: Body with kh sketch closeup.png ‎| Body with kh sketch closeup.png ‎
-          Image: Body 2a.png |‎ Body 2a.png ‎
-          Image: Body 2.png |‎ Body 2.png
-          Image: Body.png |‎ Body.png
-          Image: Assembly.png ‎| Assembly.png
-        </gallery>
-
-
-        """
-        if len( file_list ) == 0:
-            return ""
-
-        ret_str   = "<gallery>\n"
-        for ix, i_file in enumerate( file_list ):
-            ret_str   = f"{ret_str}   Image: {i_file} | {i_file} #{ix}\n"
-
-        ret_str       = f"{ret_str}</gallery>"
-
-        return ret_str
-
-   # ------------------------------------------
-    def file_list_to_image_str( self, file_list ) :
-        """
-        <!-------------- image 1 ------------->
-        [[Image: Body with kh sketch closeup.png |500px|left|The Body]]
-        Sketch place just where the plug is to go.
-        <br style="clear:both" />
-
-        """
-        if len( file_list ) == 0:
-            return ""
-
-        ret_str   = "\n"
-        for ix, i_file in enumerate( file_list ):
-            ret_str   = f"{ret_str}<!-------------- image {ix} ------------->\n"
-            ret_str   = f"{ret_str}[[Image: {i_file} |500px|left| image {ix} image {i_file}]]\n"
-            ret_str   = f"{ret_str}text for file  {i_file} image {ix}\n"
-            ret_str   = f"{ret_str}<br style=\"clear:both\" />\n\n"
-        #ret_str    = f"{ret_str}</gallery>"
-
-        return ret_str
-
 
     # ------------------------------------------
     def transform_url_wiki(self, in_text, ):
@@ -1446,55 +1659,8 @@ class CmdProcessor( object ):
                 lines2.append("*'''[" + i_line + " " + part_b + " ]'''")
                 odd = True
 
-        new = '\r\n'.join(lines2)
+        new = self.line_sep.join( lines2 )
         return (True, "urls to wiki", new)
-
-    # ------------------------------------------
-    def transform_no_ws( self, in_text,  ):
-        """
-        no white space
-        """
-        ret_text   ="".join( in_text.split() )
-        #ret_text = "no ws not implemented"
-        return ( True, "no white space", ret_text )
-
-    # ------------------------------------------
-    def transform_less_ws( self, in_text,  ):
-        """
-        less white space -- multiple spaces reduced to one
-        """
-        ret_text   =" ".join( in_text.split() )
-        #ret_text = "no ws not implemented"
-        return ( True, "less white space", ret_text )
-
-    # ------------------------------------------
-    def transform_cap( self, in_text,  ):
-        """
-        capitalize  -- always works
-        """
-        ret_text   = in_text.upper()
-        #ret_text = "no ws not implemented"
-        return ( True, "cap", ret_text )
-
-
-    # ------------------------------------------
-    def transform_test( self, in_text,  ):
-        """
-        test -- look at supporting stuff
-        """
-        ret_text    = in_text
-        #ret_text   = in_text.upper()
-        #ret_text = "no ws not implemented"
-        return (False, "test not implemented", ret_text )
-
-    # ------------------------------------------
-    def transform_lower( self, in_text,  ):
-        """
-        lower -- always works
-        """
-        ret_text   = in_text.lower()
-        #ret_text = "no ws not implemented"
-        return ( True, "lower", ret_text )
 
     # ------------------------------------------
     def transform_user_pages(self, in_text, ):
@@ -1519,85 +1685,15 @@ class CmdProcessor( object ):
             else:
                 pass
 
-        ret_text = "\n".join( trans_lines )
+        ret_text = self.line_sep.join( trans_lines )
 
         return (True, "user page transform", ret_text)
-
-    # ------------------------------------------
-    def transform_comma_sep(self, in_text, ):
-        """
-        for email concat, extract each line, put in a comma to replace \n
-        ?? enhance other seps, quote elements..... look a csv stuff that might already exist
-        """
-        lines = in_text.split("\n")
-        non_blank_lines = [a_line.strip() for a_line in lines if len(a_line.strip()) > 0]  # drop empty line
-
-        # rint non_blank_lines
-
-        if len(non_blank_lines) == 0:
-            return (False, "commas in", "")
-
-        ret_text = ",".join(non_blank_lines)
-
-        return (True, "commas in", ret_text)
-
-    # ------------------------------------------
-    def transform_sage(self, in_text, ):
-        """
-        for sage to sage math notebook
-        """
-        lines = in_text.split( "\r" )
-
-        new_lines = []
-
-        for a_line in lines:
-            b_line     = a_line.replace("\n", "")
-            new_lines.append( b_line )
-
-        lines = new_lines
-        #non_blank_lines = [a_line.strip() for a_line in lines if len(a_line.strip()) > 0]  # drop empty line
-
-        #print( lines )
-
-        # lines to drop  --
-        # lines to blank
-        # lines to comment
-
-        # replace an entire of line
-        for ix_line, a_line in enumerate( lines ):
-            #print( a_line )
-            a_line     = a_line + " "
-            print( a_line )
-            print("")
-            if a_line.startswith( "SageMath " ):
-                print("fix SageMath")
-                a_line = " "
-                lines[ix_line]  = a_line
-
-        # -- words to blank
-        # replace at beginning of line
-        # replace sage with blank
-        for ix_line, i_line in enumerate( lines ):
-            #a_line = a_line.replace( )
-            if i_line.startswith( "sage: " ):
-                i_line = i_line[6:]
-                lines[ix_line]  = i_line
-
-#        lines_2 =
-#        # rint non_blank_lines
-#
-#        if len(non_blank_lines) == 0:
-#            return (False, "commas in", "")
-
-        ret_text = "\r\n".join( lines )
-
-        return (True, "notebook edits", ret_text)
 
     # ------------------------------------------
     def transform_un_dent( self, in_text,  ):
         """
         find no of spaces on first line and remove from rest of lines
-        return tuple
+        return usual transform tuple
         """
         lines             = in_text.split( "\n" )
 
@@ -1610,7 +1706,7 @@ class CmdProcessor( object ):
                 break
             no_blank += 1
         if no_blank == 0:
-            return ( False, "un_dent", "" )
+            return ( False, "un_dent", in_text )
 
         delete_me         = " " * no_blank
         new_lines         = []
@@ -1622,13 +1718,13 @@ class CmdProcessor( object ):
             else:
                 new_lines.append( i_line )
                 # should not happen, but could ( bad copy )
-
         #rint new_lines
 
-        ret_text     = "\n".join( new_lines )
+        ret_text     = self.line_sep.join( new_lines )
 
         return ( True, "un_dentn", ret_text )
 
+# ------------------- utility -----------------------
     # ------------------------------------------
     def is_filename( self, a_string,  ):
     #def is_filename( self, a_string,  ):   is_file    file_exists  ?? not sure
@@ -1690,21 +1786,6 @@ class CmdProcessor( object ):
         #  never get here
 
     # ------------------------------------------
-#    def is_filename_ext( self, a_string, a_list  ):
-#        """
-#        drop this guy
-#        a_string  is the  string a file name -- full path with an extension in the list of strings
-#                  no cleanup
-#        strip the filename before calling for \r\n....
-#        look at extensions and see if match list
-#        return boolean
-#        """
-#        print("drop this guy")
-#        #print( a_string )
-#        ( flag, file_name, ext )  = self.is_filename_with_ext( a_string, a_list  )
-#        return flag
-
-    # ------------------------------------------
     def is_filename_text( self, a_string,  ):
         """
         how different from above, this is a mess !!
@@ -1715,9 +1796,47 @@ class CmdProcessor( object ):
         look at extensions and see if match list
         return boolean
         """
-
         flag, a_fn, a_ext =  self.is_filename_with_ext(  a_string, self.text_extends  )
         return flag
+
+    # ----------------------------------------
+    def clean_string_to_list( self, in_text,           delete_tailing_spaces = True,
+                              delete_comments = False, delete_blank_lines    = False,   ):
+        #def clean_string( a_string ):
+        """
+        split string to a list, get rid of any remaining /r  and self.line_sep
+        might make a comprehension if i computed a couple of functions
+        speed is not so much an issue here, think about it ??
+        args:
+        a_string                 = a_string of lines
+        delete_blank_lines       = what it says  -- all spaces count as blank "  " functionally = ""
+        delete_comments          = what it says  -- comment, # strip off from #, may leave blank line if delete blanks not true
+        delete_tailing_spaces    = what it says
+        return
+        """
+        ix_deleted  = 0
+        new_lines   = []
+
+        lines   = in_text.splitlines()
+        for i_line in lines:
+            # clean_line        = i_line.strip( "\r" ) no longer needed
+            if delete_comments:
+                ix            = i_line.find( "#")
+                if ix != -1 :
+                    i_line    = i_line[ ix +1 : ]
+
+            clean_line_strip  = i_line.rstrip(  )
+
+            if( clean_line_strip == "" ) and ( delete_blank_lines ):
+                ix_deleted   += 1
+                pass
+            else:
+                if delete_tailing_spaces:
+                    new_lines.append( clean_line_strip )
+                else:
+                    new_lines.append( i_line )
+
+        return ( new_lines, ix_deleted )
 
     # ----------------------------------------
     def clean_string(self, a_string):
@@ -1743,7 +1862,7 @@ class CmdProcessor( object ):
 
         return ( b_string )
 
-# ------------------- unit tests -------------------
+# ------------------- unit tests  c -------------------
 # not really maintained, to use may need to fix
 # comment out to delete or revise and use
 

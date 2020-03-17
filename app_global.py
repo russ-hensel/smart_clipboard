@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
+
+
 """
 Created on Sun Aug  6 21:06:50 2017
 
 @author: Russ
 
- for clipboard
-typical use
-from app_global import AppGlobal
+for clipboard
+typical use:
+    from app_global import AppGlobal
 
-self.parameters          = AppGlobal.parameters
-AppGlobal.parameters     = self
+    self.parameters          = AppGlobal.parameters
+    AppGlobal.parameters     = self
+
 
 """
 
@@ -81,12 +84,61 @@ def addLoggingLevel( levelName, levelNum, methodName=None):
     setattr(logging.getLoggerClass(), methodName, logForLevel)
     setattr(logging, methodName, logToRoot )
 
+# ------------------------
+class NoLoggerLogger( object, ):
+    """
+    a temporary logger before we have a proper logger
+    implement some of the methods of the logger
+    just some of the protocol not all of this
+    log(level, msg, *args, **kwargs)¶
+    perhaps import module and use its constants which seem not to be
+    CRITICAL 50 ERROR  40   WARNING 30  INFO  20  DEBUG 10 NOTSET 0
+
+    """
+    __log_later             = []         # tuples for logging after logger is set
+    # ----------------------------------------------
+    @classmethod
+    def info( cls, msg ):
+        """
+        mirror logger.info in limited way
+        """
+        cls.log( logging.INFO, msg )
+
+    # ----------------------------------------------
+    @classmethod
+    def debug( cls, msg ):
+        """
+        mirror logger.debug in limited way
+        """
+        cls.log( logging.DEBUG, msg )
+    # ----------------------------------------------
+    @classmethod
+    def log( cls, level, msg, *args, **kwargs ):
+        """
+        mirror logger.log in limited way
+        """
+        arg_set  = ( level, msg, )  # not clear how to get rest, for now discard
+        print( f"{arg_set[0]} >> {arg_set[1]}" )
+        cls.__log_later.append( arg_set )
+
+    # ----------------------------------------------
+    @classmethod
+    def log_saved_for_later( cls, logger ):
+        """
+        now have a logger so spit out the saved up stuff if any
+        may or may not print
+        ?? add some indent
+        """
+        for arg_set in cls.__log_later :
+            print( f"log_saved_for_later {arg_set[ 0 ]} {arg_set[ 1 ]}" )
+            logger.log( arg_set[ 0 ], arg_set[ 1 ] )
 
 # ===============================
 class OSCall( object, ):
     """
     try to call os based on attempts with different utilities
     in different operating systems
+    idea is that a os utility will be used to open a file ( or url, or other argument )
     """
     #------------------------
     def __init__(self, command_list, ):
@@ -103,8 +155,9 @@ class OSCall( object, ):
         """
         add a command at the beginning and re init the list
         call internally at init or externally ( parameters ) to add to list
+        if no commands are added, how could this work
         """
-        print( f"adding {more_command_list}")
+        #print( f"adding {more_command_list}")
         if more_command_list is None:
             self.command_list        = more_command_list     # [   r"D:\apps\Notepad++\notepad++.exe", r"gedit", r"xed", r"leafpad"   ]   # or init from parameters or put best guess first
 
@@ -129,14 +182,14 @@ class OSCall( object, ):
             ret =  None
         else:
             ret =         self.command_list[ self.ix_command ]
-#        print( f"command = { self.ix_command} {ret} ", flush = True )
+#       # print( f"command = { self.ix_command} {ret} ", flush = True )
         return ret
 
     # ----------------------------------------------
     def os_call( self, cmd_arg,  ):
         """
         make an os call trying various utilities until one works
-
+        this is really the reason for this class and its instances
         """
 #        proc = Popen( [ cls.parameters.ex_editor, txt_file ] )
         while True:   # will exit when it works or run out of editors
@@ -161,7 +214,6 @@ class OSCall( object, ):
 #                 cls.logger.error( "os_open_logfile exception trying to use >" + str( cls.parameters.ex_editor ) + "< to open file >" + str( cls.parameters.pylogging_fn ) +
 #                                  "< Exception " + str( excpt ) )
 
-
 # ===============================
 class AppGlobal( object ):
     """
@@ -171,7 +223,7 @@ class AppGlobal( object ):
     """
     controller              = None
     parameters              = None
-    logger                  = None      # should be set when logger is configured
+    logger                  = NoLoggerLogger      #     reset when logger is configured
     logger_id               = None
     #scheduled_event_list    = "None"
     #helper                  = "None"
@@ -205,10 +257,7 @@ class AppGlobal( object ):
 
     # cls not yet defined
     # this gives the name notice to force_log_level... perhaps a better name might be used
-    addLoggingLevel( "Notice", force_log_level, methodName=None)
-
-
-
+    addLoggingLevel( "Notice", force_log_level, methodName = None)
 
     # -----------------------
     def __init__(self,  controller  ):
@@ -216,10 +265,6 @@ class AppGlobal( object ):
         use as singleton as a class never instance
         """
         y=1/0
-
-
-
-
 
     # ----------------------
     def state_info():
@@ -229,14 +274,23 @@ class AppGlobal( object ):
 
         """
         info_list   = []
-        #info_list   += AppGlobal.__dir__()
         info_list   += dir( AppGlobal )
 
         return info_list
         #AppGlobal.state_info( )
 
+    # ----------------------------------------------
+    @classmethod
+    def set_logger( cls, logger ):
+        """
+        set the system logger once setup, empty NoLoggerLogger
 
-    #--------------------------------
+        """
+        #print( "set logger" )
+        cls.logger    = logger
+        NoLoggerLogger.log_saved_for_later( logger )
+
+    #-------------------------------
     @classmethod
     def print_debug( cls, msg  ):  #
         """
@@ -247,7 +301,6 @@ class AppGlobal( object ):
         if cls.logger.getEffectiveLevel() <=  logging.DEBUG :
             print( msg, flush = True )
         cls.logger.debug( msg )
-
 
     # ----------------------------------------------
     @classmethod
@@ -285,11 +338,10 @@ class AppGlobal( object ):
         """
 		show about box -- might be nice to make simple to go to url ( help button )
         """
-        url   =  r"http://www.opencircuits.com/SmartPlug_Help_File"
+        url   =  r"http://www.opencircuits.com/Python_Smart_ClipBoard"
         __, mem_msg   = cls.show_process_memory( )
         msg  = f"{cls.controller.app_name}  version:{cls.controller.version} \n  by Russ Hensel\n  Memory in use {mem_msg} \n  Check <Help> or \n     {url} \n     for more info."
         messagebox.showinfo( "About", msg,  )   #   tried ng: width=20  icon = "spark_plug_white.ico"
-
 
     # ----------------------------------------------
     @classmethod
@@ -366,8 +418,9 @@ class AppGlobal( object ):
         """
 		what it says
         see parameters for different types of files and naming that will work with this
+        this probably should hav more functions in AppGlobal
         """
-        #help_file            = self.parameters.help_file
+        #help_file         = self.parameters.help_file
         if help_file.startswith( "http:" ) or help_file.startswith( "https:" ):
            ret  = webbrowser.open( help_file, new=0, autoraise=True )    # popopen might also work with a url
 #           print( f"help http: {help_file} returned {ret}")
@@ -391,44 +444,52 @@ class AppGlobal( object ):
 #        print( f"help popopen  {help_file} returned {ret}")
 
     # ----------------------------------------------
-    @classmethod
-    def os_open_help_file( cls, help_file ):
-        """
-		what it says
-        see parameters for different types of files and naming that will work with this
-        """
-        #help_file            = self.parameters.help_file
-        if help_file.startswith( "http:" ) or help_file.startswith( "https:" ):
-           ret  = webbrowser.open( help_file, new=0, autoraise=True )    # popopen might also work with a url
-#           print( f"help http: {help_file} returned {ret}")
-           return
-
-        a_join        = Path(Path( help_file ).parent.absolute() ).joinpath( Path( help_file ).name )
-#        print( f"a_join {type( a_join )} >>{a_join}<<" )
-
-        #if a_join.endswith( ".txt" ):
-        if a_join.suffix.endswith( ".txt" ):
-            cls.os_open_txt_file( str(a_join) )
-            return
-
-        file_exists   = os.path.exists( a_join )
-        print( f"file {a_join} exists >>{file_exists}<<" )
-        #full_path     = Path( help_file ).parent.absolute()
-#        print( f"a_join {a_join}" )
-        help_file     = str( a_join )
-
-        ret = os.popen( help_file )
-#        print( f"help popopen  {help_file} returned {ret}")
+#    @classmethod
+#    def os_open_help_file( cls, help_file ):
+#        """
+#		what it says
+#        see parameters for different types of files and naming that will work with this
+#        """
+#        #help_file            = self.parameters.help_file
+#        if help_file.startswith( "http:" ) or help_file.startswith( "https:" ):
+#           ret  = webbrowser.open( help_file, new=0, autoraise=True )    # popopen might also work with a url
+##           print( f"help http: {help_file} returned {ret}")
+#           return
+#
+#        a_join        = Path(Path( help_file ).parent.absolute() ).joinpath( Path( help_file ).name )
+##        print( f"a_join {type( a_join )} >>{a_join}<<" )
+#
+#        #if a_join.endswith( ".txt" ):
+#        if a_join.suffix.endswith( ".txt" ):
+#            cls.os_open_txt_file( str(a_join) )
+#            return
+#
+#        file_exists   = os.path.exists( a_join )
+#        print( f"file {a_join} exists >>{file_exists}<<" )
+#        #full_path     = Path( help_file ).parent.absolute()
+##        print( f"a_join {a_join}" )
+#        help_file     = str( a_join )
+#
+#        ret = os.popen( help_file )
+##        print( f"help popopen  {help_file} returned {ret}")
 
     # ----------------------------------------------
     @classmethod
     def os_open_txt_file( cls, txt_file ):
         """
         open a text file with system configured editor
-		?? could check for validity of the editor or use try except
+        AppGlobal.os_open_txt_file( fn )
         """
         cls.file_text_editor.os_call( txt_file )
 
+    # ----------------------------------------------
+    @classmethod
+    def os_open_a_snip_file( cls, a_snip_file ):
+        """
+        open a snip file with system configured editor
+        AppGlobal.os_open_a_snip_file( fn )
+        """
+        proc = Popen( [ cls.parameters.snip_editor, a_snip_file ] )
 
      # ----------------- debuging ----------------
     def to_str():
@@ -449,8 +510,6 @@ class AppGlobal( object ):
          sys.stdout.flush()
 
 
-
-
 # ==============================================
 if __name__ == '__main__':
     """
@@ -464,3 +523,5 @@ if __name__ == '__main__':
     print( AppGlobal.state_info( ) )
 
 # ======================== eof ======================
+
+

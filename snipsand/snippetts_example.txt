@@ -1,0 +1,199 @@
+>>>>>python snip file ( example )
+#>>>>>python example for ......
+
+>>>>>python logging
+# this is a snippet comment, # must be in col 0
+msg = f"a message {data}"
+AppGlobal.logger.info( msg )    # debug info warning, error critical
+AppGlobal.print_debug( msg )    # largely for debugging, remove 
+
+>>>>>my fancy signature
+# -----------------------------------
+from the office of:
+	John
+		J
+			Bengerman 
+	Phone 555 1212
+>>>>>python function
+# -----------------------------------
+def foo( ):
+    """
+    Purpose: see title
+    Args: 
+    Return: state change, output
+    Raises: none planned        Purpose: see title
+    Args:
+        n: the number to get the square root of.
+    Returns:
+        the square root of n.
+    Raises:
+        TypeError: if n is not a number.
+    """
+    pass
+    
+>>>>>activate python 3
+rem  smithers 
+call activate python3_spyder3
+rem  millhouse 
+call activate py36 maybe 
+
+>>>>>python message
+msg =  "done" 
+self.logger.info( msg )
+self.gui.write_gui( msg )
+print( msg )
+
+>>>>>python fprint
+msg      = f"{}{}"
+print( msg)
+
+
+
+>>>>>python class definition
+class AppClass( object ):
+    """
+    About this class.....
+    """
+    #----------- init -----------
+    def __init__(self, arg ):
+        """
+        Usual init see class doc string
+        """
+        # this is the constructor run when you create
+        # like  app = AppClass( 55 )
+        self.arg = arg
+        self._private              = 6
+        self.__mangled_private     = 9
+
+    def __repr__(self):
+          return "App Class __repr__"
+
+    # called by str( instance of AppClass )
+    def __str__(self):
+        return "App Class __str__" + " self.arg = " + str( self.arg )
+    # -----------------------------------
+    def bar( self, ):
+        """
+        Purpose:
+        Args:
+        Return:
+        """
+        ret_val = "bar"
+        return ret_val
+    def _private(self):
+        """
+        """
+        ret_val = "_private"
+        return ret_val     
+     
+    def __very_private(self):
+        """
+        """
+        ret_val = "__very_private"
+        return ret_val     
+        
+    #----------- debug -----------
+    #----------- main functions -----------
+>>>>>python cls class definition maybe
+class AppClass( object ):
+    """
+    About this class.....
+    """
+    #----------- init -----------
+    def __init__(self, arg ):
+        """
+        See class doc 
+        """
+        # this is the constructor run when you create
+        # like  app = AppClass( 55 )
+        self.arg = arg
+        self._private              = 6
+        self.__mangled_private     = 9
+
+    def __repr__(self):
+          return "App Class __repr__"
+
+    # called by str( instance of AppClass )
+    def __str__(self):
+        return "App Class __str__" + " self.arg = " + str( self.arg )
+    # -----------------------------------
+    def bar( self, ):
+        """
+        
+        """
+        return ret_val
+
+    #----------- debug -----------
+    #----------- main functions -----------
+
+>>>>>python print flush
+print( "Hi Uni", flush = True )
+print( f"Hi Uni{2*3}", flush = True )
+import sys
+print( "Hi Uni" )
+sys.stdout.flush()
+>>>>>python fString
+msg    = f"adding: {4+2}"
+>>>>>python print fString 
+print( f"text{expression" )
+>>>>>wiki table
+{| class="wikitable"
+|-valign="top"
+|What
+|Terminal
+|Instrumentino
+<!-------------------------------->
+|-valign="top"
+|Terminal show send recieve
+|Yes
+|?
+<!-------------------------------->
+<!--------------------------------
+|-valign="top"
+|aaa
+|bbb
+|ccc
+<!-------------------------------->
+|-valign="top"
+|aaa
+|bbb
+|ccc
+<!--------------------------------
+|-valign="top"
+|ddd
+|eee
+|fff
+<!-------------------------------->
+|-valign="top"
+|
+|
+|
+<!-------------------------------->
+<!--------------------------------
+<!--------------------------------
+<!-------------------------------->
+|}
+
+>>>>>wiki special links
+'''[[User:Russ_hensel]]'''  '''[[Main Page]]'''   
+>>>>>wiki unformatted code
+<pre>
+code
+</pre>
+>>>>>wiki hidden
+<!-----------
+this cannot bee seen
+------------->
+>>>>>wiki categories
+[[Category:Arduino/RaspberryPi]] [[Category:Linux]][[Category:Mint]]
+>>>>>google search pi
+raspberry pi python mathplotlib
+>>>>>bla blah ba
+black
+    sheep
+    [[Category:Draft]] [[Category:Python]] [[Category:Python Course]] [[Category:Workshops/Course]]  [[Category:Arduino/RaspberryPi]]
+<!-----------
+this cannot bee seen
+------------->
+
+>>>>>end

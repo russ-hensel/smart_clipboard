@@ -4,10 +4,10 @@
 # above for windows ??
 #     /usr/bin/python
 
-#print( "start imports" )  # debugging splash screen
+
 
 """
-*>text
+this is the main module for the clipboard app
 
 """
 
@@ -31,7 +31,7 @@ import cmd_processor
 from   app_global import AppGlobal
 
 # ------------------------------
-def   print_uni( a_string_ish ):
+def print_uni( a_string_ish ):
     """
     print even if unicode char messes it con
     maybe doing as a call is over kill
@@ -52,7 +52,8 @@ class App( object ):
         splash screen which is of not help unless we sleep the init
         """
         self.app_name          = "ClipBoard"
-        self.version           = "Ver 5: 2020 02 19"
+        self.version           = "Ver 7: 2020 03 17.01"
+        # clean out dead
         AppGlobal.controller   = self
         self.gui               = None
 
@@ -77,55 +78,47 @@ class App( object ):
             pass
 
         self.parameters     = parameters.Parameters( ) # open early as may effect other parts of code
+
+        #if  self.parameters.set_default_path_here:    # Now change the directory to location of this file
+#        if True:
+#            py_path    = self.parameters.running_on.py_path
+#
+#            # retval = os.getcwd()
+#            # print( f"Directory now            {retval}")
+#
+#            print( f"Directory now ( sw if not ''  {os.getcwd()} change to >>{py_path}<<")
+#            if py_path != "":
+#                os.chdir( py_path )
+
         self.config_logger()
         self.prog_info()
        # could combine with above ??
 
-        self.snippets       = {}          # predefined stuff for clipboard -- do before gui
-        self.snip_files     = {}          # predefined stuff for clipboard -- do before gui
+        self.snippets           = None       # define later automatically, leave alone
+        self.snip_files         = None       # define later automatically, leave alone
+
+        # this builds a list in parameters that is used by gui to build self.snippets and self.snip_files
+        self._read_list_of_snippets_(   self.parameters.snippets_fn  )
+        self._read_list_of_snip_files_( self.parameters.snip_file_fn )
 
 
+        self.snippets_dict       = {}          # predefined stuff for clipboard -- do before gui
+        self.snip_files_dict     = {}          # predefined stuff for clipboard -- do before gui
 
-        # gets gui ref so make after gui
+        self.button_dict    = {}          # for the button "case logic"
+
+        # gets gui ref so make before gui
         self.cmd_processor  = cmd_processor.CmdProcessor(  )   # commands processed here
 
-        self.dispatch_dict   =  {  }
-        """
-        self.dispatch_dict   =  {   self.gui.cap_rb:            self.cmd_processor.transform_cap,
-                                    self.gui.lower_rb:          self.cmd_processor.transform_lower,
-                                    self.gui.no_ws_rb:          self.cmd_processor.transform_no_ws,
-                                    self.gui.less_ws_rb:        self.cmd_processor.transform_less_ws,
-                                    self.gui.url_to_wiki_rb:    self.cmd_processor.transform_url_wiki,
-                                    self.gui.url_to_helpdb_rb:  self.cmd_processor.transform_url_to_helpdb,
-                                    self.gui.add_shell_rb:      self.cmd_processor.transform_star_shell,
-                                    self.gui.comma_sep_rb:      self.cmd_processor.transform_comma_sep,
-                                    self.gui.undent_rb:         self.cmd_processor.transform_un_dent,
-                                    self.gui.url_to_helpdb_rb:  self.cmd_processor.transform_url_to_helpdb,
-                                    self.gui.alt_line_sort_rb:  self.cmd_processor.transform_alt_line_sort,
-                                    self.gui.sage_rb:           self.cmd_processor.transform_sage,
-                                    self.gui.test_rb:           self.cmd_processor.transform_test,
-                                    self.gui.indent_line_rb:    self.cmd_processor.transform_insert_spaces,
-                                    self.gui.star_line_rb:      self.cmd_processor.transform_star_line,
-
-                                     }
-
-        """
-
-
-
+        self.dispatch_dict  =  {  }  # used somewhere for a case or switch like statement
 
         self.gui            = gui.GUI( self )  # gui references cmd processor and controller
-
-        # this take care of buttons, also command and redo commands
-        # lets try to define this in the gui so it maintains itself.
-
-
 
         self.old_clip       = ""          # old value of info in clipboard -- may be transformed - checked to see if clipboad changed
         self.undo_clip      = ""          # old value never transformed for undo
 
         msg       = "Error messages may be in log file, check it if problems -- check parmeters.py for logging level "
-        print( msg )
+        # print( msg )
         AppGlobal.print_debug( msg )
         self.logger.log( AppGlobal.fll, msg )
         self.polling_delta  = self.parameters.poll_delta_t
@@ -133,7 +126,7 @@ class App( object ):
         self.starting_dir   = os.getcwd()    # or perhaps parse out of command line
         self.gui.root.after( self.polling_delta, self.polling )
 
-#        self.history         = []      # begin to work on history, may not be implementd or incompletely
+#        self.history         = []      # begin to work on history, not be implemented
 
         # if not(self.q_to_splash == None ):
         #     self.q_to_splash.put( "stop" )
@@ -149,7 +142,7 @@ class App( object ):
         """
         configure the python logger
         """
-        AppGlobal.logger_id     = "App"        # or prerhaps self.__class__.__name__
+        AppGlobal.logger_id     = "App"
         logger                  = logging.getLogger( AppGlobal.logger_id )
 
         logger.handlers = []
@@ -164,15 +157,16 @@ class App( object ):
 
         # add handler to logger object -- want only one add may be a problem
         logger.addHandler(fh)
+        msg  = f"pre logger debug -- did it work"
+        AppGlobal.logger.debug( msg )
 
         logger.info( "Done config_logger .. next AppGlobal msg" )
         #print( "configed logger", flush = True )
         self.logger      = logger   # for access in rest of class?
-        AppGlobal.logger = logger
+        AppGlobal.set_logger( logger )
 
         msg  = f"Message from AppGlobal.print_debug >> logger level in App = {self.logger.level} will show at level 10"
         AppGlobal.print_debug( msg )
-
 
     # --------------------------------------------
     def prog_info( self,  ):
@@ -213,7 +207,6 @@ class App( object ):
         """
         # msg       = "polling ...."
         # print( msg )
-
         try:
 #            !! need a skip in here if doing a redo -- do this next
             new_clip  = pyperclip.paste()
@@ -221,7 +214,8 @@ class App( object ):
             if ( new_clip != "" ) and ( new_clip is not None ):
                 if new_clip != self.old_clip:
                     print( "\n\n new clip ------" )
-                    self.logger.debug( "polling clip change >>" + new_clip + "<<\n>>>" + self.old_clip +"<<<\n"  )
+#                    msg    = f"polling clip change: \n>>{new_clip}<< {len(new_clip)}\n>>{self.old_clip}<< {len(self.old_clip)}\n"
+#                    self.logger.debug( msg  )
                     #self.history.append( new_clip )
                     # !! need to truncate
                     self.undo_clip   = new_clip
@@ -248,6 +242,160 @@ class App( object ):
 
         finally:
             self.gui.root.after( self.polling_delta, self.polling )  # reschedule event
+
+    # -----------------------------------
+    def print_list( self, a_list  ):
+        for i_item in a_list:
+            print( i_item )
+
+    # some of these should probably not be in parameters
+    # -----------------------------------
+    def _read_list_of_snip_files_( self, file_name_list  ):
+        """
+        what it says
+        file_name_list, a string or list of file names
+        return mutate self.snip_files_dict
+                # how about a delete dups ??
+        """
+        self.snip_files         = []
+        if type( file_name_list ) == str:
+            file_name_list = [ file_name_list ]
+
+        for i_file in file_name_list:
+            self._read_a_snip_file_( i_file )
+
+        if self.parameters.snip_file_sort:
+            a_list = sorted( self.snip_files, key=lambda data: data[0] )
+            self.snip_files  = a_list
+            b_list  = []
+            last_snip_body = None
+            for i_snip in a_list:
+                i_snip_name, i_snip_body    = i_snip
+                if not ( i_snip_body == last_snip_body ):
+                    b_list.append( i_snip )
+                    last_snip_body   = i_snip_body
+                else:
+                    msg = f"append {i_snip_body}"
+                    print( msg )
+
+            self.snip_files = b_list
+
+    #--------------- old replace with above then delete this ??
+    def _read_a_snip_file_( self, file_name ):
+        """
+        what it says
+        populates self.snip_files which is a list of tuples ( name of snip, snip file name )
+        """
+        with open( file_name ) as f:
+            lines = f.readlines()
+
+        # filter of list comp ??
+        lines_no_comments = list( filter( lambda i_line: not( i_line.startswith( "#" ) ), lines ) )
+        lines = lines_no_comments
+
+        #or with stripping the newline character:
+
+        #lines = [line.strip() for line in open('filename')]
+        #print lines
+        # next now in caller
+        #self.snip_files         = []
+        snip_name  = ""
+        marker     = ">>>>>"   # len of 5 scanning files
+        ix_start_snip  = 0     # what
+        ix_end_snip    = 0     # what
+        for ix_line,i_line in enumerate( lines ):
+            # look for name marker
+            i_line   = i_line.rstrip()
+            a_find   = i_line.find( marker, 0, )
+            #rint "a_find ", a_find, i_line
+            if a_find == 0:
+                # save the old one if any
+                if snip_name != "":
+                    #snip_body     = "\n".join( lines[ ix_start_snip:ix_end_snip  ] )
+                    #snip_body     = "".join( lines[ ix_start_snip:ix_end_snip  ] )
+                    snip_body      = lines[ ix_start_snip ].strip()  # there is a crlf to be rid of
+                    snip_body      = f"{self.parameters.snip_file_path}/{snip_body}"
+                    # test for file exists
+                    is_fn          =  os.path.isfile( snip_body )
+                    if not is_fn:
+                        msg  = f"cannot find snip file {snip_body} while reading {file_name}"
+                        print( msg )
+                        AppGlobal.logger.error( msg )
+                    else:
+                        msg  = f"add snip file {snip_body} while reading {file_name}"
+                        print( msg )
+                        AppGlobal.logger.debug( msg )
+                        a_clip = ( snip_name, snip_body )
+                        self.snip_files.append( a_clip )
+                    # begin snip
+                snip_name        = i_line[ 5: ]
+                ix_start_snip    = ix_line + 1
+                ix_end_snip      = ix_start_snip
+            else:
+                ix_end_snip    += 1
+                # ---------------------
+
+        self.print_list( self.snip_files )
+        return
+        # print( self.snip_files  )
+
+    # -----------------------------------
+    def _read_list_of_snippets_( self, list_of_file_names ):
+        """
+        read snippets from a list of files or a string with a file name
+        consider a bit of cleanup of lines at end
+        not very pythonic
+        entry is a line with title, and one or more lines of content
+        # how about a delete dups ??
+        """
+        if isinstance( list_of_file_names, str ):
+              list_of_file_names  =  [ list_of_file_names ]
+
+        lines  = []
+        #read into a list for all files
+        for i_file_name in list_of_file_names:
+            with open( i_file_name ) as f:
+                i_lines = f.readlines()
+            lines  +=  i_lines           # seems to beat extend and append is wrong
+
+        # --- process list, first get rid of comment lines
+        lines_2    =   [ i_line for i_line in lines  if not( i_line[0] == "#" ) ]
+        lines      = lines_2
+
+        self.snippets           = []     # elements will be tuples (  string_name_of_snippet, snip_body_lines_sep_with_/n  )
+        snip_name  = ""
+        marker     = ">>>>>"   # len of 5
+        ix_start_snip  = 0
+        ix_end_snip    = 0
+        for ix_line,i_line in enumerate( lines ):
+            # look for name marker
+            i_line   = i_line.rstrip()
+            if len( i_line ) > 0:
+                if i_line[0] == "#":
+                    print( "read_snippets skip " + i_line )
+                    continue
+            a_find   = i_line.find( marker, 0, )
+            #rint "a_find ", a_find, i_line
+            if a_find == 0:
+                # save the old one if any
+                if snip_name != "":
+                    #snip_body     = "\n".join( lines[ ix_start_snip:ix_end_snip  ] )
+                    snip_body     = "".join( lines[ ix_start_snip:ix_end_snip  ] )    # \n is already in file?
+                    a_clip = ( snip_name, snip_body )
+                    self.snippets.append( a_clip )
+                    # begin snip
+                snip_name        = i_line[ 5: ]  # keyed to len of marker, prehaps should code this
+                ix_start_snip    = ix_line + 1
+                ix_end_snip      = ix_start_snip
+            else:
+                ix_end_snip    += 1
+                # ---------------------
+        # added a sort here -- may make optional
+        # what about delete dupes ?
+        if self.parameters.snippets_sort:
+            a_list        = sorted( self.snippets, key=lambda data: data[0] )
+            self.snippets = a_list
+
 
     # ---------------- functions -------------------    # ------------------------------------------
     def do_command_transform( self, in_text,  ):
@@ -284,14 +432,14 @@ class App( object ):
         ex: ( False,"did_what" "new_text" )
         need to maintain in right order no only one can be chosen at a time
         move to a dict or list implementation??
-        can we essencially set up in gui.py so is not missed
+        can we essentially set up in gui.py so is not missed
         !! check to see if up to date
         """
         case = self.gui.button_var.get(  )   # value of the radio button, we will do only one transform ( at least for now later untill one succeeds )
         print("do_transform() for " + str( case ))
 
         # this first may be special need special management
-        # may want to build from the gui or the comd processor ( would tighten the coupling bad)
+        # may want to build from the gui or the command processor ( would tighten the coupling - bad )
 
         # !! make functions for these first 2 then get rid of this
         if   case == self.gui.trans_off_rb:
@@ -311,17 +459,13 @@ class App( object ):
     # ------------------------------------------
     def do_transform( self, in_text,  ):
         """
+        !! looks like this and above need to be combined
         input in_text return transformed -- checks gui to see if enabled
         return done flag and success message and transformed text all in tuple
         ex: ( False,"did_what" "new_text" )
         only one can be chosen at a time
         move to a dict or list implementation??
-        can we essencially set up in gui.py so is not missed
-        !! check to see if up to date
-        works for
-            cap
-            lower failed
-            no whitespace ok
+        can we essentially set up in gui.py so is not missed
 
         """
         case = self.gui.button_var.get(  )   # value of the radio button, we will do only one transform ( at least for now later untill one succeeds )
@@ -329,79 +473,6 @@ class App( object ):
 
 
         return self.do_transform_with_dict(  in_text,  )
-
-
-    # ------------------------------------------
-    def do_transform_old( self, in_text,  ):
-        """
-        input in_text return transformed -- checks gui to see if enabled
-        return done flag and success message and transformed text all in tuple
-        ex: ( False,"did_what" "new_text" )
-        only one can be chosen at a time
-        move to a dict or list implementation??
-        can we essencially set up in gui.py so is not missed
-        !! check to see if up to date
-        works for
-            cap
-            lower failed
-            no whitespace ok
-
-        """
-        case = self.gui.button_var.get(  )   # value of the radio button, we will do only one transform ( at least for now later untill one succeeds )
-        print("do_transform() for " + str( case ))
-        #print("self.gui.no_ws_rb " + str( self.gui.no_ws_rb ))
-#        print("self.gui.url_to_helpdb " + str( self.gui.url_to_helpdb ))
-        #        print "transform() button_var case " + str( case )
-        #        sys.stdout.flush()
-        #        self.logger.info( "transform() button_var case " + str( case ) )
-
-        # could we loop thru a dict  with key of rb_index, then command to be called
-        #this would look
-
-        """
-        { 1: self.controller.cmd_processor.transform_cap }
-        how do we get the index -- use a ix_rb
-        """
-
-        # this first may be special need special management
-        if   case == self.gui.trans_off_rb:
-            return ( False, "", "transform off"  )
-
-        elif case == self.gui.uformat_rb:
-            return ( True, "unformat", in_text )
-
-        elif    case == self.gui.cap_rb:
-            return self.cmd_processor.transform_cap( in_text )
-
-        elif case == self.gui.no_ws_rb:
-            #print( "self.gui.no_ws_rb" )
-            return self.cmd_processor.transform_no_ws( in_text )
-
-        elif case == self.gui.less_ws_rb:
-            #print( "less_ws_rb" )
-            return self.cmd_processor.transform_less_ws( in_text )
-
-        elif case == self.gui.url_to_wiki:
-            return self.cmd_processor.transform_url_wiki( in_text )
-
-        elif case == self.gui.comma_sep_rb:
-            return self.cmd_processor.transform_comma_sep( in_text )
-
-        elif case == self.gui.undent_rb:
-            return self.cmd_processor.transform_un_dent( in_text )
-
-        elif case == self.gui.url_to_helpdb:
-            return self.cmd_processor.transform_url_to_helpdb( in_text )
-
-        elif case == self.gui.lower_rb:
-            print( "try lower_rb " )    # looks like we may not get here
-            ret =  self.cmd_processor.transform_lower( in_text )
-            print( ret )
-            return ret
-
-        else:
-            print( "no transform worked" )
-            return ( False, "", "" )
 
     # ------------------------------------------
     def do_commands ( self, in_text,  ):
@@ -413,7 +484,7 @@ class App( object ):
         ex: ( False, "what_transform", "transformed text" )
         !! check up to date, may have dropped some commands
 
-        seems still need
+        seems still needed
         """
 
         # !! change this by index into list which is what bove does
@@ -463,52 +534,32 @@ class App( object ):
         """
         AppGlobal.about()
 
-    #  ------------------
-    def redo_url_to_wiki( self, ):
-        #rint("redo_url_to_wiki "  + self.undo_clip )
-        is_done, did_what, new_clip  = self.cmd_processor.transform_url_wiki( self.undo_clip )
-        if is_done :
-              pyperclip.copy( new_clip  )
-              self.gui.write_gui_wt( did_what, new_clip  )
-        else:
-             self.gui.write_gui_wt( "did nothing", new_clip  )
+    # -----------------
+    def button_switcher( self, a_button ):
+        """
+        call function associated with the button
+        pass the usual arguments
 
-    #  ------------------
-    def redo_star_shell( self, ):
-        """
-        v3 called from gui
-        """
-        print("redo_star_shell "  + self.undo_clip )
-        is_done, did_what, new_clip  = self.cmd_processor.transform_star_shell( self.undo_clip )
-        if is_done :
-              pyperclip.copy( new_clip  )
-              self.old_clip    = new_clip
-              self.gui.write_gui_wt( did_what, new_clip  )
-        else:
-             #rnot a fileis_done false"
-             self.gui.write_gui_wt( "did nothing redo_star_shell", new_clip  )
+        similar to ... self.controller.redo_off,.....
 
-    #  ------------------
-    def redo_insert_spaces( self, ):
+        #self.button_dict[a_button]
+        # is_done, did_what, new_clip  = self.cmd_processor.transform_url_wiki( self.undo_clip )
+        # these will be cmd_processor like to old redo commands
         """
-        v3 called from gui
-        !! make more general purpose and call with transform function
-        """
-        print("redo_insert_spaces "  + self.undo_clip )
-        is_done, did_what, new_clip  = self.cmd_processor.transform_insert_spaces( self.undo_clip )
+        is_done, did_what, new_clip  = self.button_dict[a_button]( self.undo_clip )
         if is_done :
+              self.old_clip   = new_clip    # fake out sso do not trigger infinite polling changes
               pyperclip.copy( new_clip  )
-              self.old_clip    = new_clip
               self.gui.write_gui_wt( did_what, new_clip  )
         else:
-             #rnot a fileis_done false"
-             self.gui.write_gui_wt( "did nothing redo_insert_spaces", new_clip  )
+             self.gui.write_gui_wt( "button switcher did nothing", new_clip  )
 
     #  ------------------
     def redo_off( self, ):
         """
         v3 called from gui
         get back the old text
+        but this may mean we always unformat .... look into this ??
         """
         #print( "redo_off "  + self.undo_clip )
         new_clip         = self.undo_clip
@@ -519,51 +570,6 @@ class App( object ):
     # ----------------------------------
     def redo_unformatted( self, ):
         self.redo_off()    # same as
-
-    # ----------------------------------
-    def redo_star_line( self, ):
-        self.redo_function( self.cmd_processor.transform_star_line  )
-    # ----------------------------------
-    def redo_cap( self, ):
-        self.redo_function( self.cmd_processor.transform_cap  )
-    # ----------------------------------
-    def redo_lower( self, ):
-        self.redo_function( self.cmd_processor.transform_lower  )
-    # ----------------------------------
-    def redo_comma_sep( self, ):
-        self.redo_function( self.cmd_processor.transform_comma_sep  )
-    # ----------------------------------
-    def redo_undent( self, ):
-        self.redo_function( self.cmd_processor.transform_un_dent  )
-    # ----------------------------------
-    def redo_no_ws( self, ):
-        self.redo_function( self.cmd_processor.transform_no_ws  )
-    # ----------------------------------
-    def redo_less_ws( self, ):
-        self.redo_function( self.cmd_processor.transform_less_ws  )
-    # ----------------------------------
-    def redo_transform_sage( self, ):
-        self.redo_function( self.cmd_processor.transform_sage  )
-    # ----------------------------------
-    def redo_test( self, ):
-        self.redo_function( self.cmd_processor.transform_alt_line_sort  )
-
-    # ----------------------------------
-    def redo_x_file_up( self, ):
-        self.redo_function( self.cmd_processor.transform_upload_log  )
-
-
-
-     # ----------------------------------
-    def redo_transform_user( self, ):
-        self.redo_function( self.cmd_processor.transform_user_pages  )
-
-    # ----------------------------------
-    def redo_alt_line_sort( self, ):
-        self.redo_function( self.cmd_processor.transform_alt_line_sort  )
-    # ---------------------------------
-    def redo_url_to_helpdb( self, ):
-        self.redo_function( self.cmd_processor.transform_url_to_helpdb  )
 
     # ----------------------------------
     def chain_transform( self, ):
@@ -585,7 +591,6 @@ class App( object ):
         else:
              #rnot a fileis_done false"
              self.gui.write_gui_wt( "redo did nothing", self.old_clip  )
-
 
     # ==================== commands cmd ===================
     # ------------------------------------------
@@ -685,7 +690,7 @@ class App( object ):
     def os_open_snippets( self,  ):
         """
         used as callback from gui button
-        what to do depends on wheather the parameter is a file name or list
+        what to do depends on weather the parameter is a file name or list
 
         """
         snippet_list  = self.parameters.snippets_fn
@@ -701,54 +706,68 @@ class App( object ):
     def os_open_snip_file( self,  ):
         """
         used as callback from gui button
+        update for multiple files and use of AppGlobal
         """
         proc = Popen( [ self.parameters.ex_editor, self.parameters.snip_file_fn ] )
+
     # ----------------------------------------------
     def os_open_help( self,  ):
         """
-        used as callback from gui button
+        used as callback from gui button !! change to use appglobal
         """
-        proc = Popen( [ self.parameters.ex_editor, self.parameters.help_fn ] )
+        AppGlobal.os_open_help_file( AppGlobal.parameters.help_file )
 
     # ----------------------------------------------
     def os_open_parmfile( self,  ):
         """
-        used as callback from gui button
+        used as callback from gui button  !! change to use appglobal
         """
-        a_filename = self.starting_dir  + os.path.sep + "parameters.py"
+        # a_filename = self.starting_dir  + os.path.sep + "parameters.py"
 
-        from subprocess import Popen, PIPE  # since infrequently used ??
-        proc = Popen( [ self.parameters.ex_editor, a_filename ] )
+        # from subprocess import Popen, PIPE  # since infrequently used ??
+        # proc = Popen( [ self.parameters.ex_editor, a_filename ] )
+
+        AppGlobal.os_open_txt_file( "parameters.py" )
 
     # ----------------------------------------------
     def snip_file_select( self, event ):
         """
+        opens the seleted file from the snip file list in the configured editor or ide
+
         """
         # !! put filename in the clipboard
         #rint "list_box_select: ", event.x, event.y,  event.widget, event.widget.selection_get()
         akey  = event.widget.selection_get()
         print( akey )
-        snippet = self.snip_files[ akey ]    # ?? error handeling
-        print( snippet )
+        a_snip_file = self.snip_files_dict[ akey ]    # ?? error handling
+        print( a_snip_file )
         #( is_done, did_what, ret_text )  = self.cmd_processor.do_if_edit_text_file( snippet )
 
-        ( is_done, did_what, ret_text )  = self.cmd_processor.do_if_ext_with( snippet, None, self.parameters.snip_file_command  )
+        # ( is_done, did_what, ret_text )  = self.cmd_processor.do_if_ext_with( snippet, None, self.parameters.snip_file_command  )
+        ( is_done, did_what, ret_text )  = self.cmd_processor.do_if_snip_file( a_snip_file, None, self.parameters.snip_file_command  )
+
         if is_done:
             self.old_clip  =  ret_text     # is this right ???yes  maybe in return
             pyperclip.copy(  ret_text  )
             #self.gui.write_out( ret_text )
-            self.gui.write_gui_wt( "oppening file (idle or text or... )  ", snippet  )
+            self.gui.write_gui_wt( "opening file (idle or text or... )  ", a_snip_file  )
             ## put filename in the clipboard
             return  # ( is_done, did_what, ret_text )
         else:
-            self.gui.write_gui_wt( "did nothing", snippet  )
+            self.gui.write_gui_wt( "snip file seems not to have opened ", a_snip_files  )
             return
 
     # ----------------------------------------------
     def snippet_select( self, event ):
+        """
+        switch or case like statement when snippet is clicked on in gui -- called from gui
+        should pull snippet out of dict and place in clipboard
+        event --
+
+        """
         #rint "list_box_select: ", event.x, event.y,  event.widget, event.widget.selection_get()
-        akey      = event.widget.selection_get()
-        snippet   = self.snippets[ akey ]    # ?? error handeling
+        akey             = event.widget.selection_get()
+        snippet          = self.snippets_dict[ akey ]    # ?? error handling
 
         self.old_clip    = snippet
         self.undo_clip   = self.old_clip
@@ -758,6 +777,11 @@ class App( object ):
 
     # ----------------------------------
     def remote_dialog_bcb(self ):
+        """
+        button call back
+        not clear what this does or if it works
+
+        """
         self.gui_remote.show_it()
         print( "back from gui_remote" )
 

@@ -13,7 +13,6 @@ from   subprocess import Popen   #, PIPE  #
 from   app_global import AppGlobal
 
 
-
 #============ class =================
 
 class DropDownWidget( Tk.Frame, ):
@@ -82,6 +81,7 @@ class DropDownWidget( Tk.Frame, ):
 #        msg   = "set_text() done "
 #        AppGlobal.print_debug( msg )
 
+    # -----------------------------------------
     def xtra_bcb( self, ):
         pass  # think for debug ... check and delete
         msg   = f"xtra_bcb self.counter = >>{self.counter}<<"
@@ -197,7 +197,6 @@ class SnippetFilesDialog():
         self.win.wait_window()
 
     def _edit_snippet_file_( self, ):
-
 
          snippet_fn    = self.ddw_snippet_list.get_text()
          proc = Popen( [ AppGlobal.parameters.ex_editor, snippet_fn ] )

@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
 """
-#   parameters    for  clip_board.py
-#   some junk and unimplemented parms, !! clean up
-#    for clipboard
+   parameters    for  clip_board.py
+   some junk and unimplemented parms, !! clean up
+   unfortunately this is a moving target, will try to keep documentation up to date
+
 """
 
 import logging
@@ -19,62 +20,92 @@ class Parameters( object ):
     manages parameter values use like ini file
     a struct but with a few smarts
     """
-    def __init__( self, ):
+        # -------
+    def choose_mode( self ):
+        """
+        typically choose one mode and if you wish add the plus_test_mode
+        if you comment all out you get the default mode which should
+        run, perhaps while limping
+        """
+        #self.new_user_mode()
+#        self.millhouse_1_mode()
 
-        self.controller        = AppGlobal.controller    # save a link to the controller not actually used now
-        #self.parameters    = AppGlobal.parameters
-        AppGlobal.parameters   = self
-        # ---------  os platform... ----------------
-        self.default_config()
-        self.os_tweaks( )
-        self.computer_name_tweaks()
+        self.russ_1_mode()
+
+        # --- add on for testing, as desired
+        self.plus_test_mode()
+
+    # -------
+    def plus_test_mode( self ):
+        """
+        scratch mode to add tests to other modes
+        an add on mode
+        """
+        self.mode              = self.mode + " + test"  # change with care
+
+        self.logging_level      = logging.DEBUG
+
+        self.snippets_fn        = ["./snipsand/snippetts_test.txt", "./snipsand/snippetts_example.txt" ,"./snipsand/snippetts_1.txt"]
+        #self.snippets_fn        = "./snipsand/snippetts_test.txt"
+
+    # -------
+    def new_user_mode( self ):
+        """
+        for a new user to customize, as shipped pretty much a copy of russ_1
+        an example mode
+        new users should start here for making a mode, you may want to make a copy for reference
+        see .default_mode() for some documentation of the variables.
+        """
+        self.mode               = "New_user"
+
+        self.logging_level      = logging.DEBUG
+
+        # ----- snip or example files
+#        self.snip_file_fn       = r"snips_file_test.txt"
+#        self.snip_file_fn       = r"snip_files_nov_18.txt"
+#        self._read_snip_files_( self.snip_file_fn )
+
+        # ----- snippets
+        self.snippets_fn        = "./snipsand/snippetts_example.txt"
+        self.snippets_sort      = True
 
 
-        # same mode does not work on both so a final tweak
-        if self.computername == "smithers":
-             self.russ_1_mode()
-
-        elif self.computername == "millhouse":
-             self.millhouse_1_mode()
-
-        else:
-             self.russ_1_mode()
-
+    # ------->> More methods:  one for each mode
     # -------
     def russ_1_mode( self ):
         """
-        first mode for smithers
+        russ: first mode for smithers -- not documented
         """
         self.mode               = "Russ_1"
 
         self.logging_level      = logging.DEBUG
 
         # ----- snip or example files
-        self.snip_file_fn       = "snip_files_1.txt"
-        self.snip_file_fn       = r"D:\Russ\0000\python00\python3\_projects\clipboard\Ver3\snips_file_test.txt"
-        self.snip_file_fn       = r"snips_file_test.txt"
-        #D:\Russ\0000\python00\python3\_projects\clipboard\Ver3\snip_files_nov_18.txt
-        self.snip_file_fn       =   r"snip_files_nov_18.txt"
-#        self.snip_file_fn       = [ r"snip_files_nov_18.txt", r"snip_files_nov_18.txt" ]
-        self._read_snip_files_( self.snip_file_fn )
 
-        # ----- snippets
-        self.snippets_fn        = "snippetts_1.txt"
-
-#        self.snippets_fn        = [ "snippetts_1.txt", "snippetts_1.txt" ]   # multiple snippet files
+#        self.snippets_fn        = [ "./snipsand/snippetts_1.txt", "./snipsand/snippetts_1.txt" ]   # multiple snippet files
         self.snippets_sort      = True
-        # how about a delete dups ??
+        # ================== snippets ============================
+        self.snippets_sort      = True                # sort snippes on key, else in file order
+        self.snippets_fn        = "./snipsand/snippetts_1.txt"
 
-#        self._read_snippets_(   self.snippets_fn  )
-        self._read_list_of_snippets_( self.snippets_fn  )
+        # ================== snips ============================
+        self.snip_file_sort     = True                # sort make them easier to find in the GUI
 
-        # read the snippets
-#        self._read_list_of_snip_files_( self.snippets_fn )  # read the snippets
+        # next:  this is prepended to a snip file prior to opening the file
+        #        so you can easily keep the snip files in a place you find convient.
+        self.snip_file_path     = r"C:\Russ\0000\python00\python3\_examples"
+        #
+          # path prepended to all snip files
+        self.snip_file_fn       = "./snipsand/snip_files_russ.txt"
 
+        self.snip_editor       = r"C:\apps\Anaconda3\Scripts\thonny.exe"  # editor used for opening snip files
+
+        #self.snip_file_command  = r"c:\apps\Notepad++\notepad++.exe"    #russwin10  opens snip files, nice if can run it
 
     # -------
     def millhouse_1_mode( self ):
         """
+        russ: first mode for millhouse -- not documented
         """
         self.mode               = "millhouse_1"
 
@@ -87,31 +118,22 @@ class Parameters( object ):
         self.snip_file_fn       = r"snips_file_test.txt"
         #D:\Russ\0000\python00\python3\_projects\clipboard\Ver3\snip_files_nov_18.txt
         self.snip_file_fn       =   r"snip_files_nov_18.txt"
-#        self.snip_file_fn       = [ r"snip_files_nov_18.txt", r"snip_files_nov_18.txt" ]
-        self._read_snip_files_( self.snip_file_fn )
+#        self.snip_file_fn       = [ r"snip_files_nov_18.txt", r"snip_files_nov_18.txt" ]  #
 
         # ----- snippets
-        self.snippets_fn        = "snippetts_1.txt"
+        self.snippets_fn        = "./snipsand/snippetts_1.txt"
 
-        # self.snippets_fn        = [ "snippetts_1.txt", "snippetts_1.txt" ]
+        # self.snippets_fn        = [ "./snipsand/snippetts_1.txt", "./snipsand/snippetts_1.txt" ]
         self.snippets_sort      = True
-        # how about a delete dups ??
 
-#        self._read_snippets_(   self.snippets_fn  )
-        self._read_list_of_snippets_( self.snippets_fn  )
 
-        # read the snippets
-#        self._read_list_of_snip_files_( self.snippets_fn )  # read the snippets
-
-    # -------
-    def test_mode( self ):
-        self.mode              = "Test"
-        pass
 
     # -------
     def running_on_tweaks(self,  ):
         """
-        use running on tweaks as a more sophisticated  version of os_tweaks and computer name tweaks,
+        not a mode, a tweak, see documentation
+        use running on tweaks as a more sophisticated  version of os_tweaks and computer name tweaks which
+        may replace them
         """
         computer_id    =   self.running_on.computer_id
 
@@ -128,6 +150,8 @@ class Parameters( object ):
         elif computer_id == "theprof":
             self.ex_editor          =  r"C:\apps\Notepad++\notepad++.exe"
             self.db_file_name       =  "the_prof_db.db"
+            self.snip_file_path     = r"D:\Russ\0000\python00\python3\_examples"
+            self.win_geometry       = '1450x700+20+20'      # width x height position
 
         elif computer_id == "bulldog":
             self.ex_editor          =  r"gedit"
@@ -147,15 +171,9 @@ class Parameters( object ):
     # -------
     def os_tweaks( self ):
         """
-        this is an subroutine to tweak the default settings of "default_ _mode"
+        this is an subroutine to tweak the default settings of "default_mode"
         for particular operating systems
         you may need to mess with this based on your os setup
-
-
-        D:\Russ\0000\python00\python3\_projects\clipboard\Ver2\clipboard_b.ico   seems much to dark
-        D:\Russ\0000\python00\python3\_projects\clipboard\Ver2\clipboard_c.ico
-
-
         """
         if  self.os_win:
             pass
@@ -172,7 +190,7 @@ class Parameters( object ):
     # -------
     def computer_name_tweaks( self ):
         """
-        this is an sufroutine to tweak the default settings of "default_mode"
+        this is an subroutine to tweak the default settings of "default_mode"
         for particular computers.  Put in settings for you computer if you wish
         these are for my computers, add what you want ( or nothing ) for your computes
         !! use computer name or id ??
@@ -185,312 +203,172 @@ class Parameters( object ):
 
         elif self.computername == "millhouse":
             self.ex_editor          =  r"C:\apps\Notepad++\notepad++.exe"    # russ win 10 millhouse
-            self.win_geometry       = '1000x700+250+5'          # width x height position
+            self.win_geometry       = '1300x700+50+5'          # width x height position
             self.pylogging_fn       = "millhouse_clipboard.py_log"   # file name for the python logging
-            self.snip_file_fn       = r"C:\Russ\0000\python00\python3\_projects\clipboard\Ver3\snips_file_auto.txt"
+            #self.snip_file_fn       = r"C:\Russ\0000\python00\python3\_projects\clipboard\Ver3\snips_file_auto.txt"
             # need to associate with extension -- say a dict
             self.snip_file_command  = r"C:\apps\Notepad++\notepad++.exe"  #russwin10   !! implement
 
         elif self.computername  == "theprof":
             self.ex_editor          =  r"c:\apps\Notepad++\notepad++.exe"    # russ win 10 smithers
 
-    # ------->> Subroutines:  one for each mode alpha order - except tutorial
     # -------
-    def default_config( self ):
+    def __init__( self, ):
+        """
+        Init for instance, usually not modified, except perhaps debug stuff ( if any )... but use plus_test_mode()
+        may be down in listing because it should not be messed with.
+        """
+        AppGlobal.parameters       = self   # register as a global
+        self.default_mode()
+        self.running_on_tweaks()
+        self.choose_mode()
 
-        self.mode              = "default_config"
+        print( self )
+        #print( self ) # for debugging
+
+    # ------->> default mode, always call
+    # -------
+    def default_mode( self ):
+        """
+        sets up pretty much all settings
+        documents the meaning of the modes
+        call first, then override as necessary
+        good chance these settings will at least let the app run
+        """
+        self.mode              = "default"  # name your config, so it will show in app tilte, may be changed later
 
         #--------------- automatic settings -----------------
-
         self.running_on   = running_on.RunningOn
         self.running_on.gather_data()
 
         # some of the next all?? should be moved over to RunningOn
         self.running_on.log_me( logger = None, logger_level = 10, print_flag = True )
-        self.py_path       = self.running_on.py_path
+        self.py_path                   = self.running_on.py_path   # this is the path to the main.py program
 
-        self.set_default_path_here  = True  # may be tricky to reset, but we may have the original dir in running on
-
-        if  self.set_default_path_here:    # Now change the directory to location of this file
+        self.set_default_path_here     = True  # to make app location the default path in the app, Think True may always be best.
+        # above may be tricky to reset, but we may have the original dir in running on
+        # no easy way to ovride this ??
+        if  self.set_default_path_here:     # Now change the directory to location of this file
 
             py_path    = self.running_on.py_path
 
-            # retval = os.getcwd()
-            # print( f"Directory now            {retval}")
-
-            print( f"Directory now ( sw if not ''  {os.getcwd()} change to >>{py_path}<<")
+            print( f"Directory: (  >>{os.getcwd()}<< switch if not '' to >>{py_path}<<")
             if py_path != "":
                 os.chdir( py_path )
 
-        self.our_os             =   self.running_on.our_os
-        self.os_win             =   self.running_on.os_win
+        self.our_os             = self.running_on.our_os          # so we know our os  could be "linux" or our_os == "linux2"  "darwin"....
+        self.os_win             = self.running_on.os_win          # boolean True if some version of windows
+        self.computername       = self.running_on.computername    # a name of the computer if we can get it
+        self.opening_dir        = self.running_on.opening_dir     # directory where app was opened, not where it resides
 
-        self.computername       = self.running_on.computername
-
-        self.opening_dir        = self.running_on.opening_dir
-
-
-#        print( "our_os is ", our_os )
-
-        #if our_os == "linux" or our_os == "linux2"  "darwin":
-
-        if self.our_os == "win32":
-            self.os_win = True     # right now windows and everything else
-        else:
-            self.os_win = False
-
-        self.platform           = self.our_os    # sometimes it matters which os
+        self.platform           = self.our_os    # sometimes it matters which os but this value is redundant
 
 
+        self.icon               = r"clipboard_c.ico"    # icon for running app -- not used in linux
 
-        self.snippets           = None       # define later
-        self.snip_files         = None       # define later
+        self.id_color           = "blue"                # to id the app - not implemented yet
 
-        self.title              = "ClipBoard Utility"   # window title  !! drop for name version
-        self.icon               = r"D:\Temp\ico_from_windows\terminal_blue.ico"    #"icon.ico"  ?? not implementd
-        self.icon               = "clipboard.png"       #"icon.ico"  ?? throws  not implementd error
-        self.icon               = r"D:\Russ\0000\SpyderP\SmartTerminal\smaller.ico"    #  greenhouse will rename
-        self.icon               = r"D:\Russ\0000\SpyderP\ClipBoardStuff\clipboard_c.ico"
-        self.icon               = r"clipboard_c.ico"
-
-        self.id_color           = "red"                # ?? not implementd
-
-        self.win_geometry       = '1500x800+20+20'     # width x height position
-        self.win_geometry       = '900x600+700+230'     # width x height position  x, y
+        self.win_geometry       = '1500x800+20+20'     # size, position  of app on opening
+        self.win_geometry       = '900x600+700+230'    # width x height position  x, y
 
         self.pylogging_fn       = "clipboard.py_log"   # file name for the python logging
-        self.logging_level      = logging.DEBUG        # logging level DEBUG will log all catured text !
+        self.logging_level      = logging.DEBUG        # logging level DEBUG will log all captured text ! or logging.INFO
         #self.logging_level      = logging.INFO
-        self.logger_id          = "clip_board"         # id in logging file
+        self.logger_id          = "clip_board"         # id of app in logging file
 
         # ------------- file names -------------------
 
-        # this is the name of a program: its excutable with path inof.
-        # to be used in opening an exteranl editor
+        self.snip_editor       = r"C:\apps\Anaconda3\Scripts\thonny.exe"  # editor used for opening snip files
+
+        # this is the name of a program: its executable with path info.
+        # to be used in opening an external editor
         self.ex_editor         =  r"D:\apps\Notepad++\notepad++.exe"    # russ win 10
 
         # if we are writing scratch files to run in a shell or similar.
-        self.scratch_bat       =  r"scratch.bat"   # rel or absolute?
-        self.scratch_py        =  r"scratch.py"    # rel or absolute?
+        self.scratch_bat       =  r"scratch.bat"   # rel filename
+        self.scratch_py        =  r"scratch.py"    # rel filename
 
-        self.run_py            =  r"c:\apps\Notepad++\notepad++.exe"    # program to run *>py commands  !! not implemented
+        self.run_py            =  r"c:\apps\Notepad++\notepad++.exe"    # program to run *>py commands  !! not yet implemented
 
-        # files for text editing
-        self.text_extends = [  ".txt",  ".rsh", ".ino", ".py", ".h" , ".cpp", ".py_log", ".log", ]  # include the dot! add?? log py_log
+        # extensions of files for text editing
+        self.text_extends = [  ".txt",  ".rsh", ".ino", ".py", ".h" , ".cpp", ".py_log", ".log", ]  # include the dot!
 
-        # ----------------- junk ---------------
+        # ========================= buttons initial state  ======================
 
-        self.startup_sec       = 10   # expected startup time 10 for smithers
-
-        #  example use as if self.controller.parameters.os_win:
-
-        # ========================= buttons ======================
-        #------------------------- check box ---------------
-
+        #------------------------- default the named check box's see gui.py  ---------------
+        # not really implemented now... in process
         self.cmd_on            = 1     # 1 is checked or on else 0
         self.auto_url_on       = 0
         self.star_cmd_on       = 0
         self.exe_file_on       = 0
+        #... not all may be named see gui.py
 
-        #------------------------- radio buttons ---------------
-
+        #------------------------- default the named radio buttons see gui.py  ---------------
         self.rb_num_on          = 0      # which radio button on, number is not nice, but easy !! is working ???
+        #... not all may be named see gui.py
 
-        self.help_fn            = "help.txt"  # old phase out
+        self.include_wiki_buttons  = True    # experimental flag, leave True
 
+        # may not be best for text help file
         # help file can be web ( open with browser ), or txt ( open with self.editor ) or anything else ( will try to shell out may or may not work )
-        self.help_file       =  self.py_path + "/" + "help.txt"   #  >>. this is the path to our main .py file self.py_path + "/" +
-        self.help_file       =  "http://www.opencircuits.com/SmartPlug_Help_File"   # can be url or a local file -- change for clipboard !!
+        self.help_file       =  "help.txt"   #  >>. this is the path to our main .py file self.py_path + "/" +
+        self.help_file       =  "http://www.opencircuits.com/Python_Smart_ClipBoard"   # can be url or a local file -- change for clipboard !!
 
         self.help_fn            = self.help_file    # old phase out
 
-        # ================== snippest ============================
-
+        # ================== snippets ============================
         self.snippets_sort      = True                # sort snippes on key, else in file order
-        self.snippets_fn        = "snippetts_1.txt"
+        self.snippets_fn        = "./snipsand/snippetts_1.txt"  # file name with snippets, can also set as a list of strings
 
-        self.snip_file_sort     = True
-        self.snip_file_fn       = "snip_files_1.txt"
-        self.snip_file_fn       = "snip_files_2.txt"
-        self.snip_file_fn       = r"D:\Russ\0000\python00\python3\_projects\clipboard\Ver3\snips_file_auto.txt"
-        # need to associate with extension -- say a dict
-        self.snip_file_command  = r"c:\apps\Notepad++\notepad++.exe"  #russwin10   !! implement
-        #self.snip_file_command  = r"D:\apps\Anaconda\Lib\idlelib\idle.bat"
-        # self.ex_editor=r"D:\apps\Notepad++\notepad++.exe"#russwin10
+        # ================== snips ============================
+        self.snip_file_sort     = True                # sort make them easier to find in the GUI
 
-#        self._read_snippets_(   self.snippets_fn  )       # read the snippets
-#        self._read_snip_files_( self.snip_file_fn )
+        # next:  this is prepended to a snip file prior to opening the file
+        #        so you can easily keep the snip files in a place you find convient.
+        self.snip_file_path     = r"./example_snips"
+        #
+          # path prepended to all snip files
+        self.snip_file_fn       = "./snipsand/snip_files_example.txt"
+
+        self.snip_file_command  = r"c:\apps\Notepad++\notepad++.exe"    #russwin10  opens snip files, nice if can run it
 
         self.max_history       = 9          # !! not implemented  -- maybe never
         #---------------------------------------------------
 
-        self.transform         = "off"   #["","",]  !! is what
-        self.max_lines         = 10         # max number of lines logging  !! remove see history
-        # befor older lines are truncated
-        # limits memory used  0 for unlimited
-        self.default_scroll    = 1          # 1 auto scroll the recieve area, else 0  not implemnted drop ??
+        #self.transform         = "off"       #["","",]  !! is what
 
-        self.poll_delta_t      = 200        # how often wee poll for clip changes, in ms
+        self.poll_delta_t      = 200            # how often we poll for clip changes, in ms, think my computer works well as low as 10ms
 
-# ------------  Internal Subs Generally should not be modified  -----------------------
-    # -----------------------------------
-    def _read_list_of_snip_files_( self, file_name ):
-
-        pass
-    #--------------- old replace with above then delete this
-    def _read_snip_files_( self, file_name ):
-        with open( file_name ) as f:
-            lines = f.readlines()
-
-        lines_no_comments = list( filter( lambda i_line: not( i_line.startswith( "#" ) ), lines ) )
-        lines = lines_no_comments
-
-        #or with stripping the newline character:
-
-        #lines = [line.strip() for line in open('filename')]
-        #print lines
-        self.snip_files         = []
-        snip_name  = ""
-        marker     = ">>>>>"   # len of 5 scanning files
-        ix_start_snip  = 0
-        ix_end_snip    = 0
-        for ix_line,i_line in enumerate( lines ):
-            # look for name marker
-            i_line   = i_line.rstrip()
-            a_find   = i_line.find( marker, 0, )
-            #rint "a_find ", a_find, i_line
-            if a_find == 0:
-                # save the old one if any
-                if snip_name != "":
-                    #snip_body     = "\n".join( lines[ ix_start_snip:ix_end_snip  ] )
-                    #snip_body     = "".join( lines[ ix_start_snip:ix_end_snip  ] )
-                    snip_body      = lines[ ix_start_snip ].strip()  # there is a crlf to be rid of
-                    a_clip = ( snip_name, snip_body )
-                    self.snip_files.append( a_clip )
-                    # begin snip
-                snip_name        = i_line[ 5: ]
-                ix_start_snip    = ix_line + 1
-                ix_end_snip      = ix_start_snip
-            else:
-                ix_end_snip    += 1
-                # ---------------------
-
-        if self.snip_file_sort:
-                a_list = sorted( self.snip_files, key=lambda data: data[0] )
-                self.snip_files  = a_list
-
-        return
-        # print( self.snip_files  )
-
-    # -----------------------------------
-    #--------------- old replace with above then delete this
-    def _read_list_of_snippets_( self, list_of_file_names ):
+# -----------------------------------
+    def __str__( self,   ):
         """
-        read snippets from a list of files or a string with a file name
-        consider a bit of cleanup of lines at end
-        not very pythonic
-        entry is a line with title, and one or my lines of content
-
-
+        sometimes it is hard to see where values have come out this may help if printed.
+        not complete, add as needed -- compare across applications and code above
         """
-        if isinstance( list_of_file_names, str ):
-              list_of_file_names  =  [ list_of_file_names ]
+        a_str = f">>>>>>>>>>* parameters (some) *<<<<<<<<<<<<"
+        a_str = f"{a_str}\n   mode                {self.mode}"
 
-        lines  = []
-        #read into a list for all files
-        for i_file_name in list_of_file_names:
-            with open( i_file_name ) as f:
-                i_lines = f.readlines()
-            lines  +=  i_lines           # seems to beat extend and append is wrong
+        a_str = f"{a_str}\n   logger_id           {self.logger_id}"
+        a_str = f"{a_str}\n   logging_level       {self.logging_level}"
+        a_str = f"{a_str}\n   pylogging_fn        {self.pylogging_fn}"
 
-        # --- process list, first get rid of comment lines
-        lines_2    =   [ i_line for i_line in lines  if not( i_line[0] == "#" ) ]
-        lines      = lines_2
+        a_str = f"{a_str}\n   snippets_fn         {self.snippets_fn}"
+        a_str = f"{a_str}\n   snippets_sort       {self.snippets_sort}"
 
-        self.snippets           = []     # elements will be tuples (  string_name_of_snippet, snip_body_lines_sep_with_/n  )
-        snip_name  = ""
-        marker     = ">>>>>"   # len of 5
-        ix_start_snip  = 0
-        ix_end_snip    = 0
-        for ix_line,i_line in enumerate( lines ):
-            # look for name marker
-            i_line   = i_line.rstrip()
-            if len( i_line ) > 0:
-                if i_line[0] == "#":
-                    print( "read_snippets skip " + i_line )
-                    continue
-            a_find   = i_line.find( marker, 0, )
-            #rint "a_find ", a_find, i_line
-            if a_find == 0:
-                # save the old one if any
-                if snip_name != "":
-                    #snip_body     = "\n".join( lines[ ix_start_snip:ix_end_snip  ] )
-                    snip_body     = "".join( lines[ ix_start_snip:ix_end_snip  ] )    # /n is already in file?
-                    a_clip = ( snip_name, snip_body )
-                    self.snippets.append( a_clip )
-                    # begin snip
-                snip_name        = i_line[ 5: ]
-                ix_start_snip    = ix_line + 1
-                ix_end_snip      = ix_start_snip
-            else:
-                ix_end_snip    += 1
-                # ---------------------
-        # lets add a sort here -- may make optional or its own function ?
-        if self.snippets_sort:
-            a_list        = sorted( self.snippets, key=lambda data: data[0] )
-            self.snippets = a_list
+        a_str = f"{a_str}\n   snip_file_fn        {self.snip_file_fn}"
+        a_str = f"{a_str}\n   snip_file_sort      {self.snip_file_sort}"
+        a_str = f"{a_str}\n   snip_file_command   {self.snip_file_command}"
 
-    # -----------------------------------
-    def _sort_snippets_( self, ):
-        """
-        see above
-        """
-        pass
+        a_str = f"{a_str}\n   ex_editor           {self.ex_editor}"
 
-    # -----------------------------------
-    def _read_snippets_( self, file_name ):
-        """
-        read snippets from a file
-        consider a bit of cleanup of lines at end
-        not very pythonic
-        """
-        with open( file_name ) as f:
-            lines = f.readlines()
-        lines_2    =   [ i_line for i_line in lines  if not( i_line[0] == "#" ) ]
-        lines      = lines_2
+        a_str = f"{a_str}\n   scratch_bat         {self.scratch_bat}"
+        a_str = f"{a_str}\n   scratch_py          {self.scratch_py}"
 
-        self.snippets           = []     # elements will be tuples (  string_name_of_snippet, snip_body_lines_sep_with_/n  )
-        snip_name  = ""
-        marker     = ">>>>>"   # len of 5
-        ix_start_snip  = 0
-        ix_end_snip    = 0
-        for ix_line,i_line in enumerate( lines ):
-            # look for name marker
-            i_line   = i_line.rstrip()
-            if len( i_line ) > 0:
-                if i_line[0] == "#":
-                    print( "read_snippets skip " + i_line )
-                    continue
-            a_find   = i_line.find( marker, 0, )
-            #rint "a_find ", a_find, i_line
-            if a_find == 0:
-                # save the old one if any
-                if snip_name != "":
-                    #snip_body     = "\n".join( lines[ ix_start_snip:ix_end_snip  ] )
-                    snip_body     = "".join( lines[ ix_start_snip:ix_end_snip  ] )    # /n is already in file?
-                    a_clip = ( snip_name, snip_body )
-                    self.snippets.append( a_clip )
-                    # begin snip
-                snip_name        = i_line[ 5: ]
-                ix_start_snip    = ix_line + 1
-                ix_end_snip      = ix_start_snip
-            else:
-                ix_end_snip    += 1
-                # ---------------------
-
-        if self.snippets_sort:
-                a_list = sorted( self.snippets, key=lambda data: data[0] )
-                self.snippets   = a_list
+        a_str = f"{a_str}\n   win_geometry        {self.win_geometry}"
+        a_str = f"{a_str}\n   computername        {self.computername}"
+        a_str = f"{a_str}\n   our_os              {self.our_os}"
+        a_str = f"{a_str}\n   and so much more... \n\n"
+        return a_str
 
 # =================================================
 

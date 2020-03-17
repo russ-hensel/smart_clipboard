@@ -31,8 +31,6 @@ Python reflection: how to list modules and inspect functions - Federico Tomasset
 
 Notes:
 
-
-
     ** memory
     ** disassemble
     types              ex_type.py
@@ -61,12 +59,6 @@ Notes:
 
 """
 
-
-
-#import math
-#import timeit
-#import dis
-#import sys
 
 import sys
 import os
@@ -219,7 +211,7 @@ class RunningOn( object ):
         """
         for debugging
         log and/or print info
-        add log level, and defalut
+        add log level, and default
         """
         cls.log_msg( f">>>>>>>>>>> running_on() log_me() <<<<<<<<<<<<<",     logger, logger_level, print_flag )
         cls.log_msg( f"platform_system    >{cls.platform_system}<",     logger, logger_level, print_flag )
@@ -242,9 +234,9 @@ class RunningOn( object ):
         cls.log_msg( f"py_path            >{cls.py_path }<",            logger, logger_level, print_flag )
         cls.log_msg( f"org_path           >{cls.org_path}<",            logger, logger_level, print_flag )
 
-        cls.log_msg( f"cls.cwd            >{cls.cwd }<",                 logger, logger_level, print_flag )
+        cls.log_msg( f"cls.cwd            >{cls.cwd }<",                logger, logger_level, print_flag )
 
-        cls.log_msg( f"---------------- end running on --------------",  logger, logger_level, print_flag )
+        cls.log_msg( f"---------------- end running on --------------", logger, logger_level, print_flag )
 
 
 # ==============================================
@@ -374,26 +366,5 @@ process memory =      87.97 mega bytes
 
 
 """
-
-
-#
-#        bs   = "\n"
-#        print( sys.hexversion )
-#
-#        print( f"platform.platform(){platform.platform()}" )
-#
-#        print( f"platform.release(){platform.release()}" )
-#        print( f"platform.version(){platform.version()}" )
-#        print( f"platform.processor(){platform.processor()}" )
-#        print( f"""Python version: {sys.version.split( bs )}
-#        dist: {str(platform.dist())}
-#        linux_distribution: linux_distribution(),
-#
-
-#        platform: platform.platform(),
-#        uname: platform.uname(),
-#        version:  platform.version(),
-#        mac_ver:  platform.mac_ver(),
-#        """ )
 
 

@@ -1,0 +1,49 @@
+# this is a snippet file, snippets.test.txt
+# that I use for testing the snippet setup in clip_board.py
+# it has some deliberated "mistakes" to see how the program manages them 
+
+>>>>>_test 5 numbered lines
+1 a lines
+2 a second lines
+    3 an indented line 
+4 outdented
+5 # not a comment, part of the snippet last line ( blanks follow )
+
+
+>>>>>_test comments in snippet
+# -----------------------------------
+# comment should not be in snippet
+   # indented, should show
+ 
+outdented after blank line ( should be retained )
+# comment
+line after comment, should not show
+#
+>>>>>_test duplicate
+one copy of duplicate snippet -- should have another
+
+>>>>>_test duplicate
+two copy of duplicate snippet -- should have another  
+
+
+
+>>>>>python function
+# -----------------------------------
+def foo( ):
+    """
+    Purpose: see title
+    Args: 
+    Return: state change, output
+    Raises: none planned        Purpose: see title
+    Args:
+        n: the number to get the square root of.
+    Returns:
+        the square root of n.
+    Raises:
+        TypeError: if n is not a number.
+    """
+    pass
+    
+
+
+# >>>>>end
